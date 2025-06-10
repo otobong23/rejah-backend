@@ -1,8 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-// import { join } from 'path';
-// import * as express from 'express';
+import { config } from 'dotenv';
+config()
+
+const port = process.env.PORT || 4000 
+console.log(port)
 
 
 async function bootstrap() {
@@ -13,7 +16,7 @@ async function bootstrap() {
       transform: true, // transforms plain JSON into class instances
     }),
   );
-  // app.use('/public', express.static(join(__dirname, '..', 'public')));
-  await app.listen(process.env.PORT ?? 3000);
+  
+  await app.listen(port);
 }
 bootstrap();
