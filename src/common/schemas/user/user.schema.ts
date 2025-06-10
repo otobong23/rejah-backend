@@ -16,11 +16,11 @@ export class User {
   @Prop({ required: true, trim: true })
   password: string;
 
-  @Prop({ type: [String, undefined], select: false })
-  forgotPasswordCode: string | undefined;
+  @Prop({ type: String, select: false, default: undefined })
+  forgotPasswordCode?: string;
 
-  @Prop({ type: [Number, undefined], select: false })
-  forgotPasswordCodeValidation: number | undefined;
+  @Prop({ type: Number, select: false, default: undefined })
+  forgotPasswordCodeValidation?: number;
 
   @Prop({ required: true })
   referral_code?: string;
