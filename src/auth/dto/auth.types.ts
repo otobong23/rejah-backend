@@ -10,7 +10,7 @@ export class Signup {
    @IsNotEmpty()@IsString()@Length(6, 20)
    readonly password: string;
 
-   @IsOptional()
+   @IsOptional()@IsString()
    readonly referral_code?: string;
 }
 

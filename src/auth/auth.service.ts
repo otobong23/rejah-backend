@@ -33,7 +33,7 @@ export class AuthService {
     const payload = { username: user.username, email: user.email };
     return {
       success: true,
-      token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload),
       message: 'login successful'
     };
   }
@@ -54,14 +54,14 @@ export class AuthService {
     // Handle referral_code if provided
     if (signup.referral_code) {
       const { referral_code } = signup
-      const referrer = await this.userModel.findOne({ referral_code });
+      const referrer = await this.userModel.findOne({ referral_code: referral_code });
       if (!referrer) {
         throw new BadRequestException('Invalid referral code');
       }
       referredBy = referrer.referral_code;
 
       // Update referral count
-      await this.userModel.findByIdAndUpdate(referral_code, {
+      await this.userModel.findByIdAndUpdate(referrer._id, {
         $inc: { referral_count: 1 },
       });
 
