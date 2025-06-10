@@ -23,7 +23,7 @@ export class AuthController {
   //   return req.clearCookie('Authorization')
   // }
 
-  @Get('sendVerificatiionCode')
+  @Get('sendVerificationCode')
   sendVerification(@Body() { email }: { email: string }) {
     return this.authService.sendCode(email)
   }
