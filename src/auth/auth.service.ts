@@ -42,7 +42,7 @@ export class AuthService {
   //signup service functionalities
   //start
   async signup(signup: Signup) {
-    const { email, username, password, referral_code } = signup
+    const { email, username, password} = signup
     const existingUser = await this.userModel.findOne({ username });
     if (existingUser) {
       throw new ConflictException('User already exists');
@@ -52,7 +52,8 @@ export class AuthService {
     let referredBy: string | undefined;
 
     // Handle referral_code if provided
-    if (referral_code) {
+    if (signup.referral_code) {
+      const { referral_code } = signup
       const referrer = await this.userModel.findOne({ referral_code });
       if (!referrer) {
         throw new BadRequestException('Invalid referral code');
