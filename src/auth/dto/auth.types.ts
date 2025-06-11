@@ -21,3 +21,9 @@ export class Login {
    @IsNotEmpty()@IsString()@Length(6)
    readonly password: string;
 }
+
+
+export class sendVerification {
+   @IsEmail()@IsNotEmpty()@IsString()
+   readonly email: string
+}

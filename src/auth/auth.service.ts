@@ -135,7 +135,8 @@ export class AuthService {
     if (!existingUser) {
       throw new NotFoundException("User doesn't exists");
     }
-    existingUser.password = newPassword
+    const hashedPassword = await doHash(newPassword, 10);
+    existingUser.password = hashedPassword
     await existingUser.save()
     return { success: true, message: 'Password Set Successfully' }
   }

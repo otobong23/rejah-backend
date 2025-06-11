@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Login, Signup } from './dto/auth.types';
+import { Login, sendVerification, Signup } from './dto/auth.types';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
 
 @Controller('auth')
@@ -23,12 +23,12 @@ export class AuthController {
   //   return req.clearCookie('Authorization')
   // }
 
-  @Get('sendVerificationCode')
-  sendVerification(@Body() { email }: { email: string }) {
+  @Patch('sendVerificationCode')
+  sendVerification(@Body() { email }: sendVerification) {
     return this.authService.sendCode(email)
   }
 
-  @Post('verify-code')
+  @Patch('verify-code')
   verifyCode(@Body() { email, code }: { email: string, code: string }) {
     return this.authService.verifyCode(email, code)
   }
