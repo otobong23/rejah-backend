@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
+import { TransactionModule } from './transaction/transaction.module';
 configDotenv()
 
 
@@ -23,6 +24,7 @@ configDotenv()
     }),
     AuthModule,
     ProfileModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

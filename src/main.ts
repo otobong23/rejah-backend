@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { config } from 'dotenv';
+import * as bodyParser from 'body-parser';
 config()
 
 const port = process.env.PORT || 4000 
@@ -9,6 +10,9 @@ const port = process.env.PORT || 4000
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule); 
+
+  app.use(bodyParser.json({ limit: '10mb' }));      // for JSON bodies
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   app.enableCors({
     origin: ['http://localhost:3000', 'https://rejah.net', 'https://www.rejah.net'], // allow requests from your frontend

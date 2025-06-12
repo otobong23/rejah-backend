@@ -37,3 +37,21 @@ export default async function sendResetMail(to: string, username: string, code: 
    const sendMail = await transport.sendMail(mailOptions);
    return sendMail.accepted[0] === to
 }
+
+export async function sendMail(to: string, email: string, amount: number, transactionId: string) {
+   const from = process.env.EMAIL_USER;
+   const htmlContent = renderToStaticMarkup(
+      createElement(EmailTemplate, { email, amount, transactionId })
+   );
+
+   const mailOptions = {
+      from,
+      to,
+      subject: 'REJAH: Incoming Transaction Request',
+      html: htmlContent,
+   };
+
+   const sendMail = await transport.sendMail(mailOptions);
+   return sendMail.accepted[0] === to
+}
+
