@@ -1,7 +1,7 @@
-
-
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+
+const DEPOSIT_ADDRESS = 'TFcGAio7carxRnPCeVmZgCqe2AnpvPtqAf';
 
 export type UserDocument = User & Document;
 
@@ -28,6 +28,9 @@ class depositWallet {
 
 @Schema({ timestamps: true })
 export class User {
+  @Prop({ type: String, required: true, unique: true })
+  userID: string
+
   @Prop({ required: true, unique: true })
   username: string;
 
@@ -39,6 +42,36 @@ export class User {
 
   @Prop({ type: Number, select: true, default: 0})
   balance: number;
+
+  @Prop({ type: Number, select: true, default: 0})
+  totalYield: number;
+
+  @Prop({ type: Number, select: true, default: 0})
+  totalWithdraw: number;
+
+  @Prop({ type: Number, select: true, default: 0})
+  totalDeposit: number;
+
+  @Prop({ type: Number, select: true, default: 0})
+  transactionCount: number;
+
+  @Prop({ type: [String], default: [] })
+  currentPlan: string[];
+
+  @Prop({ type: [String], default: [] })
+  previousPlan: string[];
+
+  @Prop({ type: String, default: '' })
+  whatsappNo: string;
+
+  @Prop({ type: String, default: '' })
+  facebook: string;
+
+  @Prop({ type: String, default: '' })
+  telegram: string;
+
+  @Prop({ type: String, default: '' })
+  profileImage: string;
 
   @Prop({ type: String, select: false, default: undefined })
   forgotPasswordCode?: string;
@@ -55,17 +88,31 @@ export class User {
   @Prop({ default: 0 })
   referral_count?: number;
 
+  @Prop({ type: String })
+  usdtWallet: string;
+
+  @Prop({ type: String })
+  walletPassword: string
+
   @Prop({ type: withdrawalWallet })
   withdrawalWallet: withdrawalWallet;
 
   @Prop({ type: ['pending', 'completed', 'failed'] })
   withdrawStatus: 'pending' | 'completed' | 'failed'
 
+  @Prop({ type: String, default: DEPOSIT_ADDRESS })
+  depositAddress: string
+
   @Prop({ type: Boolean, default: false })
   ActivateBot: boolean;
 
+  @Prop({ type: Number, default: 0 })
+  vip: number;
+
   @Prop({ type: Date, default: Date.now() })
   joinDate: Date
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+ 

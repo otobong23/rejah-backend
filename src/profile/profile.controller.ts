@@ -13,9 +13,9 @@ export class ProfileController {
     return this.profileService.getUserProfile(req.user)
   }
 
-  @Patch(':email')
-  update(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
-    const email = req.params.email
+  @Patch('update')
+  updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
+    const email = req.user.email
     return this.profileService.updateUser(email, updateProfileDto);
   }
 }

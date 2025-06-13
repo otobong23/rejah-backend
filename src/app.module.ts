@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { CrewModule } from './crew/crew.module';
 configDotenv()
 
 
@@ -25,6 +26,7 @@ configDotenv()
     AuthModule,
     ProfileModule,
     TransactionModule,
+    CrewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

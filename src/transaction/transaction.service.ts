@@ -6,6 +6,7 @@ import { DepositDto, WithdrawDto } from './dto/transaction.dto';
 import { User, UserDocument } from 'src/common/schemas/user/user.schema';
 import { sendMail } from 'src/common/helpers/mailer';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
+import { CrewService } from 'src/crew/crew.service';
 
 const DEPOSIT_WALLET = 'TFcGAio7carxRnPCeVmZgCqe2AnpvPtqAf';
 const TRONGRID_API_URL = `https://api.trongrid.io/v1/accounts/${DEPOSIT_WALLET}/transactions/trc20`;
@@ -17,6 +18,7 @@ export class TransactionService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(UserTransaction.name) private readonly transactionModel: Model<UserTransactionDocument>,
+    private crewService: CrewService
   ) { }
 
   private async findUserByEmail(email: string): Promise<UserDocument> {
@@ -53,8 +55,9 @@ export class TransactionService {
       if (!mailSent) {
         throw new InternalServerErrorException('Failed to send Review email')
       }
-
+      existingUser.balance += amount
       await existingUser.save();
+      await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
       return { message: 'Deposit successfully', newTransaction }
   }
 
@@ -76,6 +79,7 @@ export class TransactionService {
       }
 
       await existingUser.save();
+      await this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", amount)
       return { message: 'Withdrawal request submitted successfully', newTransaction }
     } else {
       throw new NotFoundException('User not Found, please signup')

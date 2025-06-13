@@ -7,8 +7,9 @@ import { JwtService } from '@nestjs/jwt';
 import doHash, { validateHash } from 'src/common/helpers/hashing';
 import * as crypto from 'crypto';
 import sendResetMail from 'src/common/helpers/mailer';
+import { CrewService } from 'src/crew/crew.service';
 
-export function generateReferralCode(): string {
+export function generateUserID(): string {
   return crypto.randomBytes(3).toString('hex'); // 6-char code like 'a4d2f1'
 }
 
@@ -16,8 +17,27 @@ export function generateReferralCode(): string {
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private crewService: CrewService,
     private jwtService: JwtService,
   ) { }
+
+  private async generateUniqueUserID(): Promise<string> {
+  let userID: string;
+  let exists = true;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 10;
+
+  while (exists && attempts < MAX_ATTEMPTS) {
+    userID = generateUserID();
+    const user = await this.userModel.findOne({ userID });
+    exists = !!user;
+    attempts++;
+  }
+
+  if (exists) throw new RequestTimeoutException('Failed to generate unique userID after multiple attempts');
+
+  return userID!;
+}
 
   //login service functionalities 
   //start
@@ -31,6 +51,8 @@ export class AuthService {
   }
   async login(user) {
     const payload = { username: user.username, email: user.email };
+    const getCrew = await this.crewService.getUserCrew(user.email);
+    if(!getCrew) await this.crewService.createCrew(user)
     return {
       success: true,
       access_token: this.jwtService.sign(payload),
@@ -64,16 +86,20 @@ export class AuthService {
       await this.userModel.findByIdAndUpdate(referrer._id, {
         $inc: { referral_count: 1 },
       });
-
+      await this.crewService.updateCrew(referral_code, referrer)
     }
+    let userID = this.generateUniqueUserID()
+
     const newUser = await new this.userModel({
+      userID,
       email,
       username,
       password: hashedPassword,
-      referral_code: generateReferralCode(),
+      referral_code: userID,
       referredBy,
     });
     await newUser.save()
+    await this.crewService.createCrew(newUser)
 
     // Generate JWT
     const payload = { username: newUser.username, email: newUser.email };
