@@ -19,7 +19,7 @@ export class ProfileService {
     const existingUser = await this.userModel.findOne({ email })
     if (!existingUser) throw new NotFoundException('user not found');
     const existingUserCrew = await this.crewService.getUserCrew(email)
-    if(!existingUserCrew) throw new NotFoundException('user not found')
+    if (!existingUserCrew) throw new NotFoundException('user not found')
     if (existingUserCrew?.totalCrewDeposits >= 3000) existingUser.vip = 1
     if (existingUserCrew?.totalCrewDeposits >= 5000) existingUser.vip = 2
     if (existingUserCrew?.totalCrewDeposits >= 10000) existingUser.vip = 3
@@ -27,10 +27,33 @@ export class ProfileService {
     await existingUser.save();
   }
 
+  private async handleMeter(email: string) {
+    const existingUser = await this.userModel.findOne({ email });
+    if (!existingUser) throw new NotFoundException('User not found');
+    const existingUserCrew = await this.crewService.getUserCrew(email);
+    if (!existingUserCrew) throw new NotFoundException('User crew not found');
+    const tc = existingUserCrew.totalCrewDeposits ?? 0;
+    let meter = 0;
+
+    if (tc < 3000) {
+      meter = Math.round((tc / 3000) * 100);
+    } else if (tc >= 3000 && tc < 5000) {
+      meter = Math.round(((tc - 3000) / 2000) * 100);
+    } else if (tc >= 5000 && tc < 10000) {
+      meter = Math.round(((tc - 5000) / 5000) * 100);
+    } else {
+      meter = 100;
+    }
+
+    existingUser.meter = meter;
+    await existingUser.save();
+  }
+
   async getUserProfile({ email }: { email: string }) {
     const existingUser = await this.userModel.findOne({ email: email })
     if (existingUser) {
       await this.handleVIP(email);
+      await this.handleMeter(email)
       return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
     } else {
       throw new NotFoundException('User not Found, please signup')
@@ -41,6 +64,7 @@ export class ProfileService {
     const existingUser = await this.userModel.findOneAndUpdate({ email }, updateData, { new: true })
     if (existingUser) {
       await this.handleVIP(email);
+      await this.handleMeter(email)
       return { ...existingUser.toObject(), ...updateData, password: undefined, __v: undefined, _id: undefined }
     } else {
       throw new NotFoundException('User not Found, please signup')

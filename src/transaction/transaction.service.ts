@@ -7,6 +7,8 @@ import { User, UserDocument } from 'src/common/schemas/user/user.schema';
 import { sendMail } from 'src/common/helpers/mailer';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
 import { CrewService } from 'src/crew/crew.service';
+import { config } from 'dotenv';
+config()
 
 const DEPOSIT_WALLET = 'TFcGAio7carxRnPCeVmZgCqe2AnpvPtqAf';
 const TRONGRID_API_URL = `https://api.trongrid.io/v1/accounts/${DEPOSIT_WALLET}/transactions/trc20`;
@@ -38,27 +40,15 @@ export class TransactionService {
     }
 
     const { amount } = depositDto;
-    const response = await axios.get(TRONGRID_API_URL);
-    const transactions = response.data.data;
-    const matchedTransaction = transactions.find((tx: any) => {
-      const txAmount = Number(tx.value) / USDT_DECIMALS;
-      return tx.to === DEPOSIT_WALLET && txAmount === amount;
-    });
-    if (!matchedTransaction) {
-      throw new NotFoundException('No matching deposit found.');
-    }
-
-    const newTransaction = new this.transactionModel({ email, type: 'deposit', amount, status: 'completed', date: new Date() }) as UserTransactionDocument & { _id: any };
+    const newTransaction = new this.transactionModel({ email, type: 'deposit', amount, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
 
     await newTransaction.save();
-      const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString())
-      if (!mailSent) {
-        throw new InternalServerErrorException('Failed to send Review email')
-      }
-      existingUser.balance += amount
-      await existingUser.save();
-      await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
-      return { message: 'Deposit successfully', newTransaction }
+    const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'deposit')
+    if (!mailSent) {
+      throw new InternalServerErrorException('Failed to send Review email')
+    }
+    await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
+    return { message: 'Deposit successfully', newTransaction }
   }
 
   async withdraw(withdrawDto: WithdrawDto, email: string) {
@@ -73,7 +63,7 @@ export class TransactionService {
 
       const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
       await newTransaction.save();
-      const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString())
+      const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'withdrawal')
       if (!mailSent) {
         throw new InternalServerErrorException('Failed to send withdrawal Confirmation email')
       }
@@ -88,7 +78,7 @@ export class TransactionService {
 
   async getTransactionHistory(email: string, limit: number = 50, offset: number = 0) {
     const user = await this.findUserByEmail(email);
-    
+
     const transactions = await this.transactionModel
       .find({ email })
       .sort({ date: -1 })

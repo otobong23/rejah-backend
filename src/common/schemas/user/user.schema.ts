@@ -109,6 +109,9 @@ export class User {
   @Prop({ type: Number, default: 0 })
   vip: number;
 
+  @Prop({ type: Number, default: 0 })
+  meter: number;
+
   @Prop({ type: Date, default: Date.now() })
   joinDate: Date
 

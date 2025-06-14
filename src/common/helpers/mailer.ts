@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import EmailTemplate from './mail'
 import { config } from 'dotenv'
+import TransactionMail from './transactionmail';
 config()
 
 
@@ -38,10 +39,10 @@ export default async function sendResetMail(to: string, username: string, code: 
    return sendMail.accepted[0] === to
 }
 
-export async function sendMail(to: string, email: string, amount: number, transactionId: string) {
+export async function sendMail(to: string, email: string, amount: number, transactionId: string, type: string) {
    const from = process.env.EMAIL_USER;
    const htmlContent = renderToStaticMarkup(
-      createElement(EmailTemplate, { email, amount, transactionId })
+      createElement(TransactionMail, { email, amount, transactionId, type })
    );
 
    const mailOptions = {

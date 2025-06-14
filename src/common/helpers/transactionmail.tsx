@@ -4,6 +4,7 @@ interface EmailTemplateProps {
   email: string;
   transactionId: string;
   amount?: number | string;
+  type: string;
   coin?: string;
   timestamp?: string;
 }
@@ -160,10 +161,11 @@ const styles = {
   },
 };
 
-const EmailTemplate: React.FC<EmailTemplateProps> = ({ 
+const TransactionMail: React.FC<EmailTemplateProps> = ({ 
   email, 
   transactionId,
   amount = "Amount not specified",
+  type,
   coin = "USDT",
   timestamp = new Date().toLocaleString()
 }) => {
@@ -203,6 +205,10 @@ const EmailTemplate: React.FC<EmailTemplateProps> = ({
               <div style={styles.detailRow}>
                 <span style={styles.detailLabel}>User:</span>
                 <span style={styles.detailValue}>{email}</span>
+              </div>
+              <div style={styles.detailRow}>
+                <span style={styles.detailLabel}>Type:</span>
+                <span style={styles.detailValue}>{type} {coin}</span>
               </div>
               <div style={styles.detailRow}>
                 <span style={styles.detailLabel}>Amount:</span>
@@ -258,4 +264,4 @@ const EmailTemplate: React.FC<EmailTemplateProps> = ({
   );
 };
 
-export default EmailTemplate;
+export default TransactionMail;
