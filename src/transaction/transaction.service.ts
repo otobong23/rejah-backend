@@ -41,7 +41,7 @@ export class TransactionService {
 
     await newTransaction.save();
     const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'deposit')
-    await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
+    // await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
     if (!mailSent) {
       throw new InternalServerErrorException('Failed to send Review email')
     }
@@ -66,7 +66,7 @@ export class TransactionService {
       }
 
       await existingUser.save();
-      await this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", amount)
+      // await this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", amount)
       return { message: 'Withdrawal request submitted successfully', newTransaction }
     } else {
       throw new NotFoundException('User not Found, please signup')
