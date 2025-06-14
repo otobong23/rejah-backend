@@ -14,6 +14,9 @@ export class UserTransaction {
   @Prop({ required: true })
   amount: number;
 
+  @Prop({ type: String })
+  plan: string
+
   @Prop({ default: 'pending', enum: ['pending', 'completed', 'failed'] })
   status: string;
 

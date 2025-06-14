@@ -88,7 +88,7 @@ export class AuthService {
       });
       await this.crewService.updateCrew(referral_code, referrer)
     }
-    let userID = this.generateUniqueUserID()
+    let userID = await this.generateUniqueUserID()
 
     const newUser = await new this.userModel({
       userID,

@@ -1,7 +1,7 @@
-import { Controller, Post, Body, UseGuards, Req, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, BadRequestException, Get } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
 import { TransactionService } from './transaction.service';
-import { DepositDto } from './dto/transaction.dto';
+import { DepositDto, WithdrawDto } from './dto/transaction.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('transaction')
@@ -20,5 +20,17 @@ export class TransactionController {
       amount,
       image,
     }, email);
+  }
+
+  @Post('withdraw')
+  async WithdrawDto(@Body() withdrawDto:WithdrawDto, @Req() req){
+    const email = req.user.email;
+    return this.transactionService.withdraw(withdrawDto, email)
+  }
+
+  @Get()
+  async getTransactions(@Req() req){
+    const email = req.user.email
+    return this.transactionService.getTransactionHistory(email)
   }
 }
