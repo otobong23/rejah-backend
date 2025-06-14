@@ -44,10 +44,10 @@ export class TransactionService {
 
     await newTransaction.save();
     const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'deposit')
+    await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
     if (!mailSent) {
       throw new InternalServerErrorException('Failed to send Review email')
     }
-    await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
     return { message: 'Deposit successfully', newTransaction }
   }
 
