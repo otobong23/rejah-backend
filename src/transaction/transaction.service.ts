@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import axios from 'axios';
 import { DepositDto, WithdrawDto } from './dto/transaction.dto';
 import { User, UserDocument } from 'src/common/schemas/user/user.schema';
 import { sendMail } from 'src/common/helpers/mailer';
@@ -11,8 +10,6 @@ import { config } from 'dotenv';
 config()
 
 const DEPOSIT_WALLET = 'TFcGAio7carxRnPCeVmZgCqe2AnpvPtqAf';
-const TRONGRID_API_URL = `https://api.trongrid.io/v1/accounts/${DEPOSIT_WALLET}/transactions/trc20`;
-const USDT_DECIMALS = 1e6;
 const to = process.env.EMAIL_USER
 
 @Injectable()
@@ -48,7 +45,7 @@ export class TransactionService {
     if (!mailSent) {
       throw new InternalServerErrorException('Failed to send Review email')
     }
-    return { message: 'Deposit successfully', newTransaction }
+    return { message: 'Deposit request submitted successfully', newTransaction }
   }
 
   async withdraw(withdrawDto: WithdrawDto, email: string) {
