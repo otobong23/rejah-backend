@@ -63,50 +63,52 @@ export class AuthService {
 
   //signup service functionalities
   //start
-  async signup(signup: Signup) {
-    const { email, username, password} = signup
-    const existingUser = await this.userModel.findOne({ username });
-    if (existingUser) {
-      throw new ConflictException('User already exists');
-    }
-    const hashedPassword = await doHash(password, 10);
-
-    let referredBy: string | undefined;
-
-    // Handle referral_code if provided
-    if (signup.referral_code) {
-      const { referral_code } = signup
-      const referrer = await this.userModel.findOne({ referral_code: referral_code });
-      if (!referrer) {
-        throw new BadRequestException('Invalid referral code');
-      }
-      referredBy = referrer.referral_code;
-
-      // Update referral count
-      await this.userModel.findByIdAndUpdate(referrer._id, {
-        $inc: { referral_count: 1 },
-      });
-      await this.crewService.updateCrew(referral_code, referrer)
-    }
-    let userID = await this.generateUniqueUserID()
-
-    const newUser = await new this.userModel({
-      userID,
-      email,
-      username,
-      password: hashedPassword,
-      referral_code: userID,
-      referredBy,
-    });
-    await newUser.save()
-    await this.crewService.createCrew(newUser)
-
-    // Generate JWT
-    const payload = { username: newUser.username, email: newUser.email };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+  // auth.service.ts
+async signup(signup: Signup) {
+  const { email, username, password, referral_code } = signup;
+  const existingUser = await this.userModel.findOne({ username });
+  if (existingUser) {
+    throw new ConflictException('User already exists');
   }
+  const hashedPassword = await doHash(password, 10);
+
+  let referredBy: string | undefined;
+  if (referral_code) {
+    const referrer = await this.userModel.findOne({ referral_code });
+    if (!referrer) {
+      throw new BadRequestException('Invalid referral code');
+    }
+    referredBy = referrer.referral_code;
+
+    await this.userModel.findByIdAndUpdate(referrer._id, {
+      $inc: { referral_count: 1 },
+    });
+  }
+
+  // Generate unique userID
+  const userID = await this.generateUniqueUserID();
+  const newUser = new this.userModel({
+    userID,
+    email,
+    username,
+    password: hashedPassword,
+    referral_code: userID, // user's referral code is their own userID
+    referredBy,
+  });
+  await newUser.save();
+  await this.crewService.createCrew(newUser);
+
+  // Update the referrers' crew levels (up to 3 levels)
+  if (referral_code) {
+    await this.crewService.updateCrew(referral_code, newUser);
+  }
+  
+  const payload = { username: newUser.username, email: newUser.email };
+  return {
+    access_token: this.jwtService.sign(payload),
+  };
+}
+
   //end
 
   //sendCode service functionalities
