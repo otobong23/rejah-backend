@@ -11,6 +11,9 @@ export class UserTransaction {
   @Prop({ required: true, enum: ['deposit', 'withdrawal', 'tier', 'bonus', 'yield'] })
   type: string;
 
+  @Prop({ type: String })
+  image: string;
+
   @Prop({ required: true })
   amount: number;
 

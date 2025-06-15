@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Crew } from 'src/crew/entities/crew.entity';
 import { CrewDocument } from 'src/common/schemas/crew/userCrew.schema';
 import { CrewService } from 'src/crew/crew.service';
+import { CreateTierDto } from './dto/create-profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -69,5 +70,14 @@ export class ProfileService {
     } else {
       throw new NotFoundException('User not Found, please signup')
     }
+  }
+
+  async updateCurrentPlan(email, newPlan: Partial<CreateTierDto>) {
+    const existingUser = await this.userModel.findOneAndUpdate({ email }, {$push: { currentPlan: newPlan } }, { new: true })
+    if (!existingUser) throw new NotFoundException('User not Found, please signup');
+    await this.handleVIP(email);
+    await this.handleMeter(email)
+    return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
+
   }
 }

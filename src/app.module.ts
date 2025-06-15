@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { CrewModule } from './crew/crew.module';
+import { AdminModule } from './admin/admin.module';
 configDotenv()
 
 
@@ -27,6 +28,7 @@ configDotenv()
     ProfileModule,
     TransactionModule,
     CrewModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

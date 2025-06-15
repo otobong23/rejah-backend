@@ -37,7 +37,7 @@ export class TransactionService {
     }
 
     const { amount } = depositDto;
-    const newTransaction = new this.transactionModel({ email, type: 'deposit', amount, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
+    const newTransaction = new this.transactionModel({ email, type: 'deposit', amount, image: depositDto.image, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
 
     await newTransaction.save();
     const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'deposit')
@@ -91,5 +91,14 @@ export class TransactionService {
         balance: user.balance,
       },
     };
+  }
+
+  async useUserBalance(email: string, amount: number) {
+    const existingUser = await this.findUserByEmail(email);
+    if(!existingUser) throw new NotFoundException('User not Found, please signup');
+    if (existingUser.balance < amount) throw new InternalServerErrorException('Insufficient balance for withdrawal');
+    existingUser.balance -= amount
+    await existingUser.save()
+    return existingUser.balance
   }
 }

@@ -46,7 +46,7 @@ export class CrewService {
         totalDeposits: user.totalDeposit,
         totalWithdrawals: user.totalWithdraw,
         transactionCount: user.transactionCount,
-        currentPlan: user.currentPlan,
+        currentPlan: user.currentPlan.map(item => item.title),
       };
 
       const levelKey = `level_${level}` as keyof Crew;

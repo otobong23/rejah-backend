@@ -26,6 +26,38 @@ class depositWallet {
   recieptImage: string
 }
 
+
+@Schema({ timestamps: true })
+export class Tier {
+  @Prop({ required: true })
+  type: string;
+
+  @Prop({ required: true })
+  title: string;
+
+  @Prop({
+    type: {
+      price: { type: String, required: true },
+      daily_yield: { type: String, required: true },
+      duration: { type: String, required: true },
+      roi: { type: String, required: true },
+      purchase_limit: { type: String, required: true },
+    },
+    required: true,
+  })
+  details: {
+    price: string;
+    daily_yield: string;
+    duration: string;
+    roi: string;
+    purchase_limit: string;
+  };
+
+  @Prop()
+  expiring_date?: string;
+}
+
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ type: String, required: true, unique: true })
@@ -55,11 +87,11 @@ export class User {
   @Prop({ type: Number, select: true, default: 0})
   transactionCount: number;
 
-  @Prop({ type: [String], default: [] })
-  currentPlan: string[];
+  @Prop({ type: [Tier], default: [] })
+  currentPlan: Tier[];
 
-  @Prop({ type: [String], default: [] })
-  previousPlan: string[];
+  @Prop({ type: [Tier], default: [] })
+  previousPlan: Tier[];
 
   @Prop({ type: String, default: '' })
   whatsappNo: string;

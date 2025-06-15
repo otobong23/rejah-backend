@@ -33,4 +33,10 @@ export class TransactionController {
     const email = req.user.email
     return this.transactionService.getTransactionHistory(email)
   }
+
+  @Post('useBalance')
+  async useBalance(@Body('amount') amount: number, @Req() req) {
+    const email = req.user.email
+    return this.transactionService.useUserBalance(email, amount)
+  }
 }

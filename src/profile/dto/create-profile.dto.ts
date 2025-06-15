@@ -17,6 +17,39 @@ export class WithdrawalWalletDto {
   amount: number;
 }
 
+class TierDetailsDto {
+  @IsString()
+  price: string;
+
+  @IsString()
+  daily_yield: string;
+
+  @IsString()
+  duration: string;
+
+  @IsString()
+  roi: string;
+
+  @IsString()
+  purchase_limit: string;
+}
+
+export class CreateTierDto {
+  @IsString()
+  type: string;
+
+  @IsString()
+  title: string;
+
+  @ValidateNested()
+  @Type(() => TierDetailsDto)
+  details: TierDetailsDto;
+
+  @IsOptional()
+  @IsString()
+  expiring_date?: string;
+}
+
 export class UserProfileDTO {
   @IsOptional()
   @IsNumber()
@@ -39,12 +72,14 @@ export class UserProfileDTO {
   transactionCount?: number;
 
   @IsOptional()
-  @IsString({ each: true })
-  currentPlan?: string[];
+  @ValidateNested()
+  @Type(() => CreateTierDto)
+  currentPlan?: CreateTierDto[];
 
   @IsOptional()
-  @IsString({ each: true })
-  previousPlan?: string[];
+  @ValidateNested()
+  @Type(() => CreateTierDto)
+  previousPlan?: CreateTierDto[];
 
   @IsOptional()
   @IsString()
