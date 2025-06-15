@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseGuards, Req, BadRequestException, Get } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
 import { TransactionService } from './transaction.service';
-import { DepositDto, WithdrawDto } from './dto/transaction.dto';
+import { DepositDto, UseBalanceDTO, WithdrawDto } from './dto/transaction.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('transaction')
@@ -35,8 +35,8 @@ export class TransactionController {
   }
 
   @Post('useBalance')
-  async useBalance(@Body('amount') amount: number, @Req() req) {
+  async useBalance(@Body() useBalanceDto: UseBalanceDTO, @Req() req) {
     const email = req.user.email
-    return this.transactionService.useUserBalance(email, amount)
+    return this.transactionService.useUserBalance(email, useBalanceDto.amount, useBalanceDto.action)
   }
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class DepositDto {
 
@@ -17,4 +17,12 @@ export class WithdrawDto {
    @IsNotEmpty()@IsString()
    walletAddress: string;
 
+}
+
+export class UseBalanceDTO {
+   @IsNotEmpty()@IsNumber()
+   amount: number;
+
+   @IsNotEmpty()@IsString()@IsIn(['add', 'minus'])
+   action: 'minus' | 'add'
 }

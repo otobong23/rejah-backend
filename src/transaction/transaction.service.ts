@@ -93,11 +93,12 @@ export class TransactionService {
     };
   }
 
-  async useUserBalance(email: string, amount: number) {
+  async useUserBalance(email: string, amount: number, action: 'minus' | 'add') {
     const existingUser = await this.findUserByEmail(email);
     if(!existingUser) throw new NotFoundException('User not Found, please signup');
     if (existingUser.balance < amount) throw new InternalServerErrorException('Insufficient balance for withdrawal');
-    existingUser.balance -= amount
+    if(action === 'minus') existingUser.balance -= amount
+    if(action === 'add') existingUser.balance += amount
     await existingUser.save()
     return existingUser.balance
   }
