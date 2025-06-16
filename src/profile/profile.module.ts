@@ -5,9 +5,10 @@ import { UserModule } from 'src/common/schemas/user/user.module';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { UserCrewModule } from 'src/common/schemas/crew/userCrew.module';
 import { CrewModule } from 'src/crew/crew.module';
+import { UserTransactionModule } from 'src/common/schemas/transaction/userTransaction.module';
 
 @Module({
-  imports: [ UserModule, UserCrewModule, CrewModule ],
+  imports: [ UserModule, UserCrewModule, CrewModule, UserTransactionModule ],
   controllers: [ProfileController],
   providers: [ProfileService, JwtStrategy],
 })

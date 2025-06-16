@@ -7,12 +7,14 @@ import { Crew } from 'src/crew/entities/crew.entity';
 import { CrewDocument } from 'src/common/schemas/crew/userCrew.schema';
 import { CrewService } from 'src/crew/crew.service';
 import { CreateTierDto } from './dto/create-profile.dto';
+import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Crew.name) private crewModel: Model<CrewDocument>,
+    @InjectModel(UserTransaction.name) private transactionModel: Model<UserTransactionDocument>,
     private crewService: CrewService,
     private readonly jwtService: JwtService) { }
 
@@ -62,8 +64,11 @@ export class ProfileService {
   }
 
   async deleteUser(email:string) {
-    const existingUser = await this.userModel.findOneAndDelete({ email })
+    const existingUser = await this.userModel.findOne({ email })
     if(!existingUser) throw new NotFoundException('User not Found, please signup');
+    await this.transactionModel.deleteMany({ email })
+    await this.crewModel.findOneAndDelete({ userID: existingUser.userID })
+    await this.userModel.findOneAndDelete({ email })
     return { message: 'user deleted successfully' }
   }
 
