@@ -34,7 +34,7 @@ export class TransactionController {
     return this.transactionService.getTransactionHistory(email)
   }
 
-  @Post('getPan')
+  @Post('getPlan')
   async getPlan(@Body() getPlanDto: getPlanDTO, @Req() req) {
     const email = req.user.email
     return this.transactionService.getPlan(email, getPlanDto.amount, getPlanDto.plan)
