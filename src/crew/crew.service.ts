@@ -206,7 +206,6 @@ export class CrewService {
         email: referrer.email,
         type: 'bonus',
         amount: bonusAmount,
-        plan: `Level ${level} ${bonusTypeMap[bonusType]} Referral Bonus from ${user.username}`,
         status: 'completed',
         Coin: coin,
         date: new Date()
