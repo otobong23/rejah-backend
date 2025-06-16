@@ -61,6 +61,12 @@ export class ProfileService {
     }
   }
 
+  async deleteUser(email:string) {
+    const existingUser = await this.userModel.findOneAndDelete({ email })
+    if(!existingUser) throw new NotFoundException('User not Found, please signup');
+    return { message: 'user deleted successfully' }
+  }
+
   async updateUser(email: string, updateData: Partial<User>) {
     const existingUser = await this.userModel.findOneAndUpdate({ email }, updateData, { new: true })
     if (existingUser) {

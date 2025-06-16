@@ -14,6 +14,11 @@ export class ProfileController {
     return this.profileService.getUserProfile(req.user)
   }
 
+  @Delete()
+  deleteUser(@Req() req) {
+    return this.profileService.deleteUser(req.user)
+  }
+
   @Patch('update')
   updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
     const email = req.user.email
