@@ -93,21 +93,45 @@ export class TransactionService {
     };
   }
 
-  async useUserBalance(email: string, amount: number, action: 'minus' | 'add') {
+  // async useUserBalance(email: string, amount: number, action: 'minus' | 'add') {
+  //   const existingUser = await this.findUserByEmail(email);
+  //   if (!existingUser) {
+  //     throw new NotFoundException('User not Found, please signup');
+  //   }
+  //   if (action === 'minus') {
+  //     if (existingUser.balance < amount) {
+  //       throw new InternalServerErrorException('Insufficient balance for withdrawal');
+  //     }
+  //     existingUser.balance -= amount;
+  //   } else if (action === 'add') {
+  //     existingUser.balance += amount;
+  //   } else {
+  //     throw new BadRequestException('Invalid action type');
+  //   }
+  //   await existingUser.save();
+  //   return existingUser.balance;
+  // }
+
+  async mine(email: string, amount: number) {
     const existingUser = await this.findUserByEmail(email);
-    if (!existingUser) {
-      throw new NotFoundException('User not Found, please signup');
+    if (!existingUser) throw new NotFoundException('User not Found, please signup');
+    existingUser.balance += amount;
+    await this.crewService.awardReferralBonus(existingUser.userID, amount, "mining_profit")
+    const newTransaction = new this.transactionModel({ email, type: 'yield', amount, status: 'completed', date: new Date() })
+    await newTransaction.save()
+    await existingUser.save();
+    return existingUser.balance;
+  }
+
+  async getPlan(email: string, amount: number, plan: string) {
+    const existingUser = await this.findUserByEmail(email);
+    if (!existingUser) throw new NotFoundException('User not Found, please signup');
+    if (existingUser.balance < amount) {
+      throw new InternalServerErrorException('Insufficient balance for withdrawal');
     }
-    if (action === 'minus') {
-      if (existingUser.balance < amount) {
-        throw new InternalServerErrorException('Insufficient balance for withdrawal');
-      }
-      existingUser.balance -= amount;
-    } else if (action === 'add') {
-      existingUser.balance += amount;
-    } else {
-      throw new BadRequestException('Invalid action type');
-    }
+    existingUser.balance -= amount;
+    const newTransaction = new this.transactionModel({ email, type: 'tier', amount, plan, status: 'completed', date: new Date() })
+    await newTransaction.save()
     await existingUser.save();
     return existingUser.balance;
   }

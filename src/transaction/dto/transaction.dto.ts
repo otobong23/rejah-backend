@@ -26,3 +26,13 @@ export class UseBalanceDTO {
    @IsNotEmpty()@IsString()@IsIn(['add', 'minus'])
    action: 'minus' | 'add'
 }
+
+export class getPlanDTO {
+
+   @IsNotEmpty()@IsNumber()
+   amount: number;
+
+   @IsNotEmpty()@IsString()
+   plan: string
+
+}

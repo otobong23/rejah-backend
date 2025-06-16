@@ -4,11 +4,13 @@ import { User, UserDocument } from 'src/common/schemas/user/user.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Crew, CrewDocument, CrewMember } from 'src/common/schemas/crew/userCrew.schema';
+import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
 
 @Injectable()
 export class CrewService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(UserTransaction.name) private transactionModel: Model<UserTransactionDocument>,
     @InjectModel(Crew.name) private crewModel: Model<CrewDocument>,
     private readonly jwtService: JwtService
   ) { }
@@ -159,6 +161,59 @@ export class CrewService {
 
         await crew.save();
       }
+
+      currentRefCode = referrer.referredBy;
+      level++;
+    }
+  }
+
+  /**
+ * @author Miracle Boniface
+ * @module CrewService
+ * @param {string} userID - ID of the user
+ * @param {number} amount - Transaction amount
+ * @param {'first_deposit' | 'mining_profit'} bonusType - Type of bonus to award
+ * @param {string} coin - Coin type (default: 'USDT')
+ * @function awardReferralBonus
+ * @description Generic function to award referral bonuses (alternative approach)
+ * @export
+ */
+  async awardReferralBonus(userID: string, amount: number, bonusType: 'first_deposit' | 'mining_profit', coin: string = 'USDT') {
+    const user = await this.userModel.findOne({ userID });
+    if (!user || !user.referredBy) return;
+
+    const bonusPercentages = [0.05, 0.03, 0.01]; // 5%, 3%, 1%
+    const bonusTypeMap = {
+      'first_deposit': 'Deposit',
+      'mining_profit': 'Mining'
+    };
+
+    let currentRefCode: string | undefined = user.referredBy;
+    let level = 1;
+
+    while (currentRefCode && level <= 3) {
+      const referrer = await this.userModel.findOne({ referral_code: currentRefCode });
+      if (!referrer) break;
+
+      const bonusAmount = amount * bonusPercentages[level - 1];
+
+      // Add bonus to referrer's balance
+      referrer.balance = (referrer.balance || 0) + bonusAmount;
+      await referrer.save();
+
+      // Create transaction record for the bonus
+      const bonusTransaction = new this.transactionModel({
+        email: referrer.email,
+        type: 'bonus',
+        amount: bonusAmount,
+        plan: `Level ${level} ${bonusTypeMap[bonusType]} Referral Bonus from ${user.username}`,
+        status: 'completed',
+        Coin: coin,
+        date: new Date()
+      });
+      await bonusTransaction.save();
+
+      console.log(`Awarded ${bonusAmount} ${bonusType} bonus to ${referrer.username} (Level ${level})`);
 
       currentRefCode = referrer.referredBy;
       level++;
