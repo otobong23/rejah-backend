@@ -16,7 +16,7 @@ export class ProfileController {
 
   @Delete()
   deleteUser(@Req() req) {
-    return this.profileService.deleteUser(req.user)
+    return this.profileService.deleteUser(req.user.email)
   }
 
   @Patch('update')
