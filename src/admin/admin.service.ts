@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AdminLoginDto, UpdateTransactionDto } from './dto/create-admin.dto';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserDocument } from 'src/common/schemas/user/user.schema';
@@ -10,6 +10,7 @@ import { CrewService } from 'src/crew/crew.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { ProfileService } from 'src/profile/profile.service';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
+import TransactionStatusEmail from 'src/common/helpers/TransactionStatusEmail';
 
 const USER_PASS = '12345678'
 
@@ -31,10 +32,10 @@ export class AdminService {
     const PASS = USER_PASS
     if (EMAIL === adminLogindto.username && PASS === adminLogindto.password) {
       const existingAdmin = await this.adminModel.findOne()
-    if (!existingAdmin) {
-      const newAdmin = new this.adminModel({ email: EMAIL })
-      await newAdmin.save()
-    }
+      if (!existingAdmin) {
+        const newAdmin = new this.adminModel({ email: EMAIL })
+        await newAdmin.save()
+      }
       return {
         success: true,
         access_token: this.jwtService.sign({ email: adminLogindto.username, password: adminLogindto.password }),
@@ -81,7 +82,7 @@ export class AdminService {
 
   async getUserCrew(userID: string) {
     const user = await this.userModel.findOne({ userID })
-    if(!user) throw new NotFoundException('User Not Found')
+    if (!user) throw new NotFoundException('User Not Found')
     return this.crewService.getCrew(userID)
   }
 
@@ -95,7 +96,7 @@ export class AdminService {
     return this.profileService.getUserProfile({ email })
   }
 
-  async getUserByuserID(userID:string) {
+  async getUserByuserID(userID: string) {
     return this.profileService.getUserProfileByUserID(userID)
   }
 
@@ -166,8 +167,13 @@ export class AdminService {
       if (typeof updateData.amount !== 'number' || !updateData.action) {
         throw new BadRequestException('Amount and action are required when completing a transaction');
       }
-      await this.useUserBalance(email, updateData.amount, updateData.action);
       if (transaction.type === 'deposit' || transaction.type === 'withdrawal') {
+        const reason = ''
+        const info = await TransactionStatusEmail(email, email, updateData.amount, transactionID, transaction.type, 'USDT', new Date().toLocaleString(), updateData.status === 'completed' ? 'approve' : 'decline', reason)
+        if (!info) {
+          throw new InternalServerErrorException(`Failed to send to Code to ${email}`)
+        }
+        await this.useUserBalance(email, updateData.amount, updateData.action);
         await this.updateAdminTotals(transaction.type, updateData.amount);
       } else {
         throw new BadRequestException('Invalid transaction type');

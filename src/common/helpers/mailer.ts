@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import EmailTemplate from './mail'
 import { config } from 'dotenv'
 import TransactionMail from './transactionmail';
+import TransactionStatusEmail from './TransactionStatusEmail';
 config()
 
 
@@ -56,3 +57,19 @@ export async function sendMail(to: string, email: string, amount: number, transa
    return sendMail.accepted[0] === to
 }
 
+export async function sendTransactionStatus(to: string, email: string, amount: number, transactionId: string, type: string, status: string, reason: string) {
+   const from = process.env.EMAIL_USER;
+   const htmlContent = renderToStaticMarkup(
+      createElement(TransactionStatusEmail, { email, transactionId, amount, type, status, reason })
+   );
+
+   const mailOptions = {
+      from,
+      to,
+      subject: 'REJAH: Incoming Transaction Request',
+      html: htmlContent,
+   };
+
+   const sendMail = await transport.sendMail(mailOptions);
+   return sendMail.accepted[0] === to
+}
