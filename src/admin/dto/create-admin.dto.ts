@@ -12,7 +12,7 @@ export class AdminLoginDto {
 
 export class AdminUpdateDto {
    @IsNumber()@IsOptional()
-   profitStop: number;
+   ProfitStop: number;
 
    @IsNumber()@IsOptional()
    totalTransactions: number;
