@@ -7,12 +7,14 @@ import { Crew, CrewDocument } from 'src/common/schemas/crew/userCrew.schema';
 import { CrewService } from 'src/crew/crew.service';
 import { CreateTierDto } from './dto/create-profile.dto';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
+import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Crew.name) private crewModel: Model<CrewDocument>,
+    @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
     @InjectModel(UserTransaction.name) private transactionModel: Model<UserTransactionDocument>,
     private crewService: CrewService,
     private readonly jwtService: JwtService) { }
@@ -59,9 +61,13 @@ export class ProfileService {
 
   async getUserProfile({ email }: { email: string }) {
     const existingUser = await this.userModel.findOne({ email: email })
+    const existingAdmin = await this.adminModel.findOne()
     if (existingUser) {
       await this.handleVIP(email);
       await this.handleMeter(email)
+      if(existingAdmin){
+        existingUser.depositAddress = existingAdmin.walletAddress
+      }
       return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
     } else {
       throw new NotFoundException('User not Found, please signup')
