@@ -3,8 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/common/schemas/user/user.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Crew } from 'src/crew/entities/crew.entity';
-import { CrewDocument } from 'src/common/schemas/crew/userCrew.schema';
+import { Crew, CrewDocument } from 'src/common/schemas/crew/userCrew.schema';
 import { CrewService } from 'src/crew/crew.service';
 import { CreateTierDto } from './dto/create-profile.dto';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
@@ -50,6 +49,12 @@ export class ProfileService {
 
     existingUser.meter = meter;
     await existingUser.save();
+  }
+
+  async getUserProfileByUserID(userID:string){
+    const existingUser = await this.userModel.findOne({ userID })
+    if (!existingUser) throw new NotFoundException('User not Found');
+    return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
   }
 
   async getUserProfile({ email }: { email: string }) {

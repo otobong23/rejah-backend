@@ -98,7 +98,7 @@ export class CrewService {
     await newCrew.save();
   }
 
-  private async getCrew(userID: string) {
+  async getCrew(userID: string) {
     const crew = await this.crewModel.findOne({ userID });
     if (!crew) return null
 

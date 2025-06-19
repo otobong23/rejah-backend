@@ -4,7 +4,6 @@ import { CrewController } from './crew.controller';
 import { UserCrewModule } from 'src/common/schemas/crew/userCrew.module';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { UserModule } from 'src/common/schemas/user/user.module';
-import { UserTransaction } from 'src/common/schemas/transaction/userTransaction.schema';
 import { UserTransactionModule } from 'src/common/schemas/transaction/userTransaction.module';
 
 @Module({

@@ -1,11 +1,43 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
-export class CreateAdminDto {}
+export class CreateAdminDto { }
 
 export class AdminLoginDto {
-   @IsString()@IsNotEmpty()
-   email: string;
-   
-   @IsString()@IsNotEmpty()
+   @IsString() @IsNotEmpty()
+   username: string;
+
+   @IsString() @IsNotEmpty()
    password: string
+}
+
+export class AdminUpdateDto {
+   @IsNumber()@IsOptional()
+   profitStop: number;
+
+   @IsNumber()@IsOptional()
+   totalTransactions: number;
+
+   @IsString()@IsOptional()
+   walletAddress: string;
+
+   @IsString()@IsOptional()
+   whatsappLink: string;
+
+   @IsString()@IsOptional()
+   telegramLink: string;
+}
+
+export class UpdateTransactionDto {
+  @IsEnum(['completed', 'failed'])
+  status: 'completed' | 'failed';
+
+  @IsString()
+  @IsOptional()
+  image?: string;
+
+  @IsNumber()
+  amount?: number
+
+  @IsEnum(['minus', 'add'])
+  action?: 'minus' | 'add'
 }

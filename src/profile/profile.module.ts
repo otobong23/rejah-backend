@@ -11,5 +11,6 @@ import { UserTransactionModule } from 'src/common/schemas/transaction/userTransa
   imports: [ UserModule, UserCrewModule, CrewModule, UserTransactionModule ],
   controllers: [ProfileController],
   providers: [ProfileService, JwtStrategy],
+  exports: [ProfileService]
 })
 export class ProfileModule {}

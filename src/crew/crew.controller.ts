@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { CrewService } from './crew.service';
-import { CreateCrewDto } from './dto/create-crew.dto';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)

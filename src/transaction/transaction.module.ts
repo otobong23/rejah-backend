@@ -11,5 +11,6 @@ import { CrewModule } from 'src/crew/crew.module';
   imports: [ UserModule, UserTransactionModule, UserCrewModule, CrewModule ],
   controllers: [TransactionController],
   providers: [TransactionService, JwtStrategy],
+  exports: [TransactionService]
 })
 export class TransactionModule {}
