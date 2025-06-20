@@ -111,7 +111,7 @@ export class TransactionService {
     if (existingUser.balance < amount) {
       throw new InternalServerErrorException('Insufficient balance for withdrawal');
     }
-    // existingUser.balance -= amount;
+    existingUser.balance -= amount;
     const newTransaction = new this.transactionModel({ email, type: 'tier', amount, plan, status: 'completed', date: new Date() })
     await newTransaction.save()
     await existingUser.save();

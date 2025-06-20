@@ -152,8 +152,10 @@ export class AdminService {
 
   async updateTransaction(email: string, transactionID: string, updateData: UpdateTransactionDto) {
     const transaction = await this.transactionModel.findOne({ email, _id: transactionID });
+    const existingUser = await this.userModel.findOne({ email });
 
     if (!transaction) throw new NotFoundException('Transaction not found or not authorized');
+    if (!existingUser) throw new NotFoundException('User not found or not authorized');
     if (transaction.status !== 'pending') {
       throw new BadRequestException('Only pending transactions can be updated');
     }
@@ -173,6 +175,10 @@ export class AdminService {
         //   throw new InternalServerErrorException(`Failed to send to Code to ${email}`)
         // }
         await this.useUserBalance(email, updateData.amount, updateData.action);
+        if(transaction.type === 'deposit') {
+          await this.crewService.awardReferralBonus(existingUser.userID, updateData.amount, "first_deposit");
+          await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", updateData.amount)
+        } else this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", updateData.amount);
         await this.updateAdminTotals(transaction.type, updateData.amount);
       } else {
         throw new BadRequestException('Invalid transaction type');
