@@ -9,6 +9,23 @@ import { CreateTierDto } from './dto/create-profile.dto';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
 
+type TIER_LIST_TYPE = {
+  type: string
+  title: string,
+  image?: string,
+  icon?: string
+  details: {
+    price: string,
+    daily_yield: string,
+    duration: string,
+    roi: string,
+    purchase_limit: string
+  }
+  expiring_date?: string
+  createdAt?: string
+}
+
+
 @Injectable()
 export class ProfileService {
   constructor(
@@ -53,7 +70,34 @@ export class ProfileService {
     await existingUser.save();
   }
 
-  async getUserProfileByUserID(userID:string){
+  private async handleExpiredPlans(email: string): Promise<void> {
+    const user = await this.userModel.findOne({ email });
+    if (!user) throw new NotFoundException('User not found, please login');
+
+    const now = new Date();
+
+    const stillActivePlans: TIER_LIST_TYPE[] = [];
+    const expiredPlans: TIER_LIST_TYPE[] = [];
+
+    for (const plan of user.currentPlan) {
+      const expiringDate = plan.expiring_date ? new Date(plan.expiring_date) : null;
+
+      if (expiringDate && expiringDate <= now) {
+        expiredPlans.push(plan);
+      } else {
+        stillActivePlans.push(plan);
+      }
+    }
+
+    if (expiredPlans.length > 0) {
+      user.currentPlan = stillActivePlans;
+      user.previousPlan.push(...expiredPlans);
+      await user.save();
+    }
+  }
+
+
+  async getUserProfileByUserID(userID: string) {
     const existingUser = await this.userModel.findOne({ userID })
     if (!existingUser) throw new NotFoundException('User not Found');
     return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
@@ -65,7 +109,8 @@ export class ProfileService {
     if (existingUser) {
       await this.handleVIP(email);
       await this.handleMeter(email)
-      if(existingAdmin){
+      await this.handleExpiredPlans(email)
+      if (existingAdmin) {
         existingUser.depositAddress = existingAdmin.walletAddress
       }
       return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
@@ -74,9 +119,9 @@ export class ProfileService {
     }
   }
 
-  async deleteUser(email:string) {
+  async deleteUser(email: string) {
     const existingUser = await this.userModel.findOne({ email })
-    if(!existingUser) throw new NotFoundException('User not Found, please signup');
+    if (!existingUser) throw new NotFoundException('User not Found, please signup');
     await this.transactionModel.deleteMany({ email })
     await this.crewModel.findOneAndDelete({ userID: existingUser.userID })
     await this.userModel.findOneAndDelete({ email })
@@ -95,7 +140,7 @@ export class ProfileService {
   }
 
   async updateCurrentPlan(email, newPlan: Partial<CreateTierDto>) {
-    const existingUser = await this.userModel.findOneAndUpdate({ email }, {$push: { currentPlan: newPlan } }, { new: true })
+    const existingUser = await this.userModel.findOneAndUpdate({ email }, { $push: { currentPlan: newPlan } }, { new: true })
     if (!existingUser) throw new NotFoundException('User not Found, please signup');
     await this.handleVIP(email);
     await this.handleMeter(email)
