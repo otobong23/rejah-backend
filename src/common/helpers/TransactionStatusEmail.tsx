@@ -252,8 +252,8 @@ const TransactionStatusEmail: React.FC<TransactionStatusEmailProps> = ({
   processingTime = "5-10 minutes"
 }) => {
   const dashboard = 'https://www.rejah.net/dashboard';
-  const transactions = 'https://www.rejah.net/transactions';
-  const support = 'https://www.rejah.net/support';
+  const transactions = 'https://www.rejah.net/dashboard/transactions';
+  const support = 'https://www.rejah.net/dashboard/support';
 
   const isApproved = status === 'approved';
   const isDeclined = status === 'declined';
