@@ -25,6 +25,12 @@ export class AdminUpdateDto {
 
    @IsString()@IsOptional()
    telegramLink: string;
+
+   @IsString()@IsOptional()
+   email: string;
+   
+   @IsString()@IsOptional()
+   password: string;
 }
 
 export class UpdateTransactionDto {

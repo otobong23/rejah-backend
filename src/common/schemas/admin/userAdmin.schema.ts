@@ -11,6 +11,9 @@ export class Admin {
    @Prop({ required: true, unique: true })
    email: string;
 
+   @Prop({ required: true, default: '12345678', unique: true })
+   password: string;
+
    @Prop({ type: Number, default: 0 })
    totalDeposit: number;
 
