@@ -144,6 +144,9 @@ export class User {
   @Prop({ type: Number, default: 0 })
   meter: number;
 
+  @Prop({ type: Boolean , default: true })
+  oneTimeBonus: boolean
+
   @Prop({ type: Date, default: Date.now() })
   joinDate: Date
 

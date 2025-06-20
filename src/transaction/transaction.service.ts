@@ -60,7 +60,8 @@ export class TransactionService {
 
       const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
       await newTransaction.save();
-      const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'withdrawal')
+      const percent = Number(amount) * 0.9
+      const mailSent = await sendMail(to, existingUser.email, percent, newTransaction._id.toString(), 'withdrawal')
       if (!mailSent) {
         throw new InternalServerErrorException('Failed to send withdrawal Confirmation email')
       }

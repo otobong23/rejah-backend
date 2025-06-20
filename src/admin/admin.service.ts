@@ -204,7 +204,10 @@ export class AdminService {
         }
         await this.useUserBalance(email, updateData.amount, updateData.action);
         if (transaction.type === 'deposit') {
-          await this.crewService.awardReferralBonus(existingUser.userID, updateData.amount, "first_deposit");
+          if(existingUser.oneTimeBonus){
+            await this.crewService.awardReferralBonus(existingUser.userID, updateData.amount, "first_deposit");
+            existingUser.oneTimeBonus = false
+          }
           await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", updateData.amount)
         } else this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", updateData.amount);
         await this.updateAdminTotals(transaction.type, updateData.amount);
