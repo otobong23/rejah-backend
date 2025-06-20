@@ -170,7 +170,7 @@ const TransactionMail: React.FC<EmailTemplateProps> = ({
   timestamp = new Date().toLocaleString()
 }) => {
   const review = 'https://www.rejah.net/admin/transactions'
-  const dashboard = 'https://www.rejah.net/admin'
+  const dashboard = 'https://www.rejah.net/admin/dashboard'
   return (
     <div style={styles.body}>
       <div style={styles.container}>
