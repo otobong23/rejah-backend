@@ -12,7 +12,6 @@ import { ProfileService } from 'src/profile/profile.service';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
 import TransactionStatusEmail from 'src/common/helpers/TransactionStatusEmail';
 
-const USER_PASS = '12345678'
 
 @Injectable()
 export class AdminService {
@@ -29,13 +28,13 @@ export class AdminService {
 
   async login(adminLogindto: AdminLoginDto) {
     const EMAIL = process.env.EMAIL_USER
-    const PASS = USER_PASS
-    if (EMAIL === adminLogindto.username && PASS === adminLogindto.password) {
+    if (EMAIL === adminLogindto.username) {
       const existingAdmin = await this.adminModel.findOne()
       if (!existingAdmin) {
         const newAdmin = new this.adminModel({ email: EMAIL })
         await newAdmin.save()
       }
+      if (existingAdmin?.password !== adminLogindto.password) throw new UnauthorizedException('Invalid credentials');
       return {
         success: true,
         access_token: this.jwtService.sign({ email: adminLogindto.username, password: adminLogindto.password }),
