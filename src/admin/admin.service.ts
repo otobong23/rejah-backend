@@ -11,6 +11,7 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { ProfileService } from 'src/profile/profile.service';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
 import TransactionStatusEmail from 'src/common/helpers/TransactionStatusEmail';
+import { sendTransactionStatus } from 'src/common/helpers/mailer';
 
 
 @Injectable()
@@ -159,23 +160,50 @@ export class AdminService {
     if (transaction.status !== 'pending') {
       throw new BadRequestException('Only pending transactions can be updated');
     }
+
     const isNowCompleted = updateData.status === 'completed';
     transaction.status = updateData.status;
     if (updateData.image) {
       transaction.image = updateData.image;
+    }
+    if (updateData.status === 'failed') {
+      const reason = 'The transaction was not approved.';
+      const info = await sendTransactionStatus(
+        email,
+        email,
+        transaction.amount,
+        transactionID,
+        transaction.type,
+        'declined',
+        reason
+      );
+      if (!info) {
+        throw new InternalServerErrorException(`Failed to send decline email to ${email}`);
+      }
+      return await transaction.save();
     }
     if (isNowCompleted) {
       if (typeof updateData.amount !== 'number' || !updateData.action) {
         throw new BadRequestException('Amount and action are required when completing a transaction');
       }
       if (transaction.type === 'deposit' || transaction.type === 'withdrawal') {
-        // const reason = ''
-        // const info = await TransactionStatusEmail(email, email, updateData.amount, transactionID, transaction.type, 'USDT', new Date().toLocaleString(), updateData.status === 'completed' ? 'approve' : 'decline', reason)
-        // if (!info) {
-        //   throw new InternalServerErrorException(`Failed to send to Code to ${email}`)
-        // }
+        const reason = '';
+
+        const info = await sendTransactionStatus(
+          email, // recipient
+          email, // shown email in the email body
+          updateData.amount,
+          transactionID,
+          transaction.type,
+          'approved',
+          reason,
+        );
+
+        if (!info) {
+          throw new InternalServerErrorException(`Failed to send transaction status email to ${email}`);
+        }
         await this.useUserBalance(email, updateData.amount, updateData.action);
-        if(transaction.type === 'deposit') {
+        if (transaction.type === 'deposit') {
           await this.crewService.awardReferralBonus(existingUser.userID, updateData.amount, "first_deposit");
           await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", updateData.amount)
         } else this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", updateData.amount);
