@@ -167,11 +167,11 @@ export class AdminService {
         throw new BadRequestException('Amount and action are required when completing a transaction');
       }
       if (transaction.type === 'deposit' || transaction.type === 'withdrawal') {
-        const reason = ''
-        const info = await TransactionStatusEmail(email, email, updateData.amount, transactionID, transaction.type, 'USDT', new Date().toLocaleString(), updateData.status === 'completed' ? 'approve' : 'decline', reason)
-        if (!info) {
-          throw new InternalServerErrorException(`Failed to send to Code to ${email}`)
-        }
+        // const reason = ''
+        // const info = await TransactionStatusEmail(email, email, updateData.amount, transactionID, transaction.type, 'USDT', new Date().toLocaleString(), updateData.status === 'completed' ? 'approve' : 'decline', reason)
+        // if (!info) {
+        //   throw new InternalServerErrorException(`Failed to send to Code to ${email}`)
+        // }
         await this.useUserBalance(email, updateData.amount, updateData.action);
         await this.updateAdminTotals(transaction.type, updateData.amount);
       } else {
