@@ -30,6 +30,9 @@ export class UserTransaction {
   @Prop({ default: 'USDT' })
   Coin: string; // e.g. 'USDT', 'BTC'
 
+  @Prop({ type: String })
+  withdrawWalletAddress: string;
+
   @Prop({ type: Date })
   date: Date;
 }

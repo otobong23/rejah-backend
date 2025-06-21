@@ -58,7 +58,7 @@ export class TransactionService {
         throw new InternalServerErrorException('Insufficient balance for withdrawal')
       }
 
-      const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
+      const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, date: new Date() }) as UserTransactionDocument & { _id: any };
       await newTransaction.save();
       const percent = Number(amount) * 0.9
       const mailSent = await sendMail(to, existingUser.email, percent, newTransaction._id.toString(), 'withdrawal')
