@@ -118,7 +118,7 @@ async signup(signup: Signup) {
     if (!existingUser) {
       throw new NotFoundException("User doesn't exists");
     } 
-    const code = Math.floor(Math.random() * 1000000).toString();
+    const code = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     const info = await sendResetMail(email, existingUser.username, code)
     if(!info) {
       throw new InternalServerErrorException(`Failed to send to Code to ${email}`)
