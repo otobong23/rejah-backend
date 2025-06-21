@@ -144,7 +144,7 @@ async signup(signup: Signup) {
     if (Date.now() - new Date(existingUser.forgotPasswordCodeValidation).getTime() > 10 * 60 * 1000){
       throw new RequestTimeoutException('Code Has Been Expired!')
     }
-    if(code !== existingUser.forgotPasswordCode){
+    if(code === existingUser.forgotPasswordCode){
       existingUser.forgotPasswordCode = undefined
       existingUser.forgotPasswordCodeValidation = undefined
       await existingUser.save()
