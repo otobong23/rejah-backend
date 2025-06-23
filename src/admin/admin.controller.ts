@@ -29,6 +29,12 @@ export class AdminController {
 
   // ─────────────── USERS ───────────────
   @UseGuards(JwtAuthGuard)
+  @Get('totalUsers')
+  async getTotalUsers() {
+    return this.adminService.getTotalUsers()
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('users')
   async getAllUsers(
     @Query('limit', ParseIntPipe) limit = 50,
@@ -50,6 +56,12 @@ export class AdminController {
   }
 
   // ─────────────── CREWS ───────────────
+  @UseGuards(JwtAuthGuard)
+  @Get('totalCrew')
+  async getTotalCrew() {
+    return this.adminService.getTotalCrews()
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('crews')
   async getAllCrews(

@@ -60,6 +60,10 @@ export class AdminService {
     return { ...existingAdmin.toObject(), __v: undefined, _id: undefined }
   }
 
+  async getTotalCrews() {
+    return await this.crewModel.countDocuments()
+  }
+
   async getAllCrews(limit = 50, page = 1) {
     const offset = (page - 1) * limit;
 
@@ -84,6 +88,10 @@ export class AdminService {
     const user = await this.userModel.findOne({ userID })
     if (!user) throw new NotFoundException('User Not Found')
     return this.crewService.getCrew(userID)
+  }
+
+  async getTotalUsers() {
+    return await this.userModel.countDocuments()
   }
 
   async getAllUsers(limit = 50, page = 1) {
