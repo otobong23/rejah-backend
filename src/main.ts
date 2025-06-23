@@ -15,7 +15,7 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://rejah.net', 'https://www.rejah.net'], // allow requests from your frontend
+    origin: ['http://localhost:3000', 'https://rejah.net'], // allow requests from your frontend
     credentials: true,               // allow cookies/auth headers if needed
   });
 
