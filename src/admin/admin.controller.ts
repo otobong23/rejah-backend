@@ -51,8 +51,7 @@ export class AdminController {
   }
 
   @Patch('user/:email')
-  updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
-    const email = req.user.email
+  updateProfile(@Param('email') email: string, @Body() updateProfileDto: UpdateProfileDto) {
     return this.adminService.updateUser(email, updateProfileDto);
   }
 
