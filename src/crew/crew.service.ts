@@ -192,31 +192,33 @@ export class CrewService {
     let level = 1;
 
     while (currentRefCode && level <= 3) {
-      const referrer = await this.userModel.findOne({ referral_code: currentRefCode });
-      if (!referrer) break;
-
-      const bonusAmount = amount * bonusPercentages[level - 1];
-
-      // Add bonus to referrer's balance
-      referrer.balance = (referrer.balance || 0) + bonusAmount;
-      await referrer.save();
-
-      // Create transaction record for the bonus
-      const bonusTransaction = new this.transactionModel({
-        email: referrer.email,
-        type: 'bonus',
-        amount: bonusAmount,
-        status: 'completed',
-        Coin: coin,
-        date: new Date()
-      });
-      await bonusTransaction.save();
-
-      console.log(`Awarded ${bonusAmount} ${bonusType} bonus to ${referrer.username} (Level ${level})`);
-
-      currentRefCode = referrer.referredBy;
+    const referrer = await this.userModel.findOne({ referral_code: currentRefCode });
+    // 🔒 Skip if no referrer or if they haven't deposited yet
+    if (!referrer || referrer.totalDeposit <= 0) {
+      currentRefCode = referrer?.referredBy;
       level++;
+      continue;
     }
+    const bonusAmount = amount * bonusPercentages[level - 1];
+    // ✅ Add bonus to referrer's balance
+    referrer.balance = (referrer.balance || 0) + bonusAmount;
+    await referrer.save();
+    // 🧾 Create transaction record for the bonus
+    const bonusTransaction = new this.transactionModel({
+      email: referrer.email,
+      type: 'bonus',
+      amount: bonusAmount,
+      status: 'completed',
+      Coin: coin,
+      date: new Date(),
+    });
+    await bonusTransaction.save();
+
+    console.log(`✅ Awarded ${bonusAmount} ${bonusType} bonus to ${referrer.username} (Level ${level})`);
+
+    currentRefCode = referrer.referredBy;
+    level++;
+  }
   }
 
 
