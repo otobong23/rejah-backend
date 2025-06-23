@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Quer
 import { AdminService } from './admin.service';
 import { AdminLoginDto, AdminUpdateDto, UpdateTransactionDto } from './dto/create-admin.dto';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
+import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
 
 
 @Controller('admin')
@@ -47,6 +48,12 @@ export class AdminController {
   @Get('user/:email')
   async getUser(@Param('email') email: string) {
     return await this.adminService.getUser(email);
+  }
+
+  @Patch('user/:email')
+  updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
+    const email = req.user.email
+    return this.adminService.updateUser(email, updateProfileDto);
   }
 
   @UseGuards(JwtAuthGuard)

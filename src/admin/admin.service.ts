@@ -11,6 +11,7 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { ProfileService } from 'src/profile/profile.service';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
 import { sendTransactionStatus } from 'src/common/helpers/mailer';
+import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
 
 
 @Injectable()
@@ -134,6 +135,10 @@ export class AdminService {
       totalPages: Math.ceil(total / limit),
       total
     };
+  }
+
+  async updateUser(email:string, updateData:UpdateProfileDto) {
+    return this.profileService.updateUser(email, updateData)
   }
 
   private async useUserBalance(email: string, amount: number, action: 'minus' | 'add') {
