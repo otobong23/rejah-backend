@@ -50,6 +50,7 @@ export class AdminController {
     return await this.adminService.getUser(email);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('user/:email')
   updateProfile(@Param('email') email: string, @Body() updateProfileDto: UpdateProfileDto) {
     return this.adminService.updateUser(email, updateProfileDto);
@@ -61,6 +62,7 @@ export class AdminController {
     return await this.adminService.getUserByuserID(userID)
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('search/users')
   async searchUsers(@Query('keyword') keyword: string) {
     return this.adminService.searchUsers(keyword);
@@ -88,6 +90,7 @@ export class AdminController {
     return await this.adminService.getUserCrew(userID);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('search/crews')
   async searchCrews(@Query('keyword') keyword: string) {
     return this.adminService.searchCrews(keyword);
