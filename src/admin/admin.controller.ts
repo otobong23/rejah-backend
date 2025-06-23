@@ -55,6 +55,11 @@ export class AdminController {
     return await this.adminService.getUserByuserID(userID)
   }
 
+  @Get('search/users')
+  async searchUsers(@Query('keyword') keyword: string) {
+    return this.adminService.searchUsers(keyword);
+  }
+
   // ─────────────── CREWS ───────────────
   @UseGuards(JwtAuthGuard)
   @Get('totalCrews')
@@ -75,6 +80,11 @@ export class AdminController {
   @Get('crew')
   async getUserCrew(@Query('userID') userID: string) {
     return await this.adminService.getUserCrew(userID);
+  }
+
+  @Get('search/crews')
+  async searchCrews(@Query('keyword') keyword: string) {
+    return this.adminService.searchCrews(keyword);
   }
 
   // ─────────────── TRANSACTIONS ───────────────

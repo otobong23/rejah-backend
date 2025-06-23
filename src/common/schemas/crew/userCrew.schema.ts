@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Types, Model } from 'mongoose';
 
 
 // Crew Member Schema
@@ -71,4 +71,22 @@ export class Crew {
 }
 
 export const CrewSchema = SchemaFactory.createForClass(Crew);
-export type CrewDocument = Crew & Document;
+
+// 🔍 Static Search Method
+CrewSchema.statics.search = function (keyword: string) {
+  const pattern = new RegExp(keyword, 'i');
+  return this.find({
+    $or: [
+      { ownerUsername: pattern },
+      { ownerReferralCode: pattern },
+      { userID: pattern },
+    ],
+  });
+};
+
+// 🧠 Types
+export interface CrewDocument extends Crew, Document {}
+
+export interface CrewModel extends Model<CrewDocument> {
+  search(keyword: string): Promise<CrewDocument[]>;
+}

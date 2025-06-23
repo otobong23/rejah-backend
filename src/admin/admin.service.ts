@@ -1,16 +1,15 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AdminLoginDto, UpdateTransactionDto } from './dto/create-admin.dto';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserDocument } from 'src/common/schemas/user/user.schema';
+import { User, UserDocument, UserModel } from 'src/common/schemas/user/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
-import { Crew, CrewDocument } from 'src/common/schemas/crew/userCrew.schema';
+import { Crew, CrewDocument, CrewModel } from 'src/common/schemas/crew/userCrew.schema';
 import { CrewService } from 'src/crew/crew.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { ProfileService } from 'src/profile/profile.service';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
-import TransactionStatusEmail from 'src/common/helpers/TransactionStatusEmail';
 import { sendTransactionStatus } from 'src/common/helpers/mailer';
 
 
@@ -18,9 +17,9 @@ import { sendTransactionStatus } from 'src/common/helpers/mailer';
 export class AdminService {
   constructor(
     @InjectModel(Admin.name) private adminModel: Model<AdminDocument>,
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(User.name) private userModel: UserModel,
     @InjectModel(UserTransaction.name) private transactionModel: Model<UserTransactionDocument>,
-    @InjectModel(Crew.name) private crewModel: Model<CrewDocument>,
+    @InjectModel(Crew.name) private crewModel: CrewModel,
     private jwtService: JwtService,
     private crewService: CrewService,
     private transactionService: TransactionService,
@@ -235,5 +234,13 @@ export class AdminService {
     }
 
     return await transaction.save();
+  }
+
+  async searchUsers(keyword: string): Promise<UserDocument[]> {
+    return this.userModel.search(keyword);
+  }
+
+  async searchCrews(keyword: string): Promise<CrewDocument[]> {
+    return this.crewModel.search(keyword);
   }
 }

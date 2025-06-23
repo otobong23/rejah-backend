@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Model } from 'mongoose';
 
 const DEPOSIT_ADDRESS = 'TFcGAio7carxRnPCeVmZgCqe2AnpvPtqAf';
 
-export type UserDocument = User & Document;
+// export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, _id: false })
 class withdrawalWallet {
   @Prop()
   walletAddress: string
@@ -14,7 +14,7 @@ class withdrawalWallet {
   amount: number
 }
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, _id: false })
 class depositWallet {
   @Prop()
   amount: number
@@ -27,7 +27,7 @@ class depositWallet {
 }
 
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, _id: false })
 export class Tier {
   @Prop({ required: true })
   type: string;
@@ -72,19 +72,19 @@ export class User {
   @Prop({ required: true, trim: true })
   password: string;
 
-  @Prop({ type: Number, select: true, default: 0})
+  @Prop({ type: Number, select: true, default: 0 })
   balance: number;
 
-  @Prop({ type: Number, select: true, default: 0})
+  @Prop({ type: Number, select: true, default: 0 })
   totalYield: number;
 
-  @Prop({ type: Number, select: true, default: 0})
+  @Prop({ type: Number, select: true, default: 0 })
   totalWithdraw: number;
 
-  @Prop({ type: Number, select: true, default: 0})
+  @Prop({ type: Number, select: true, default: 0 })
   totalDeposit: number;
 
-  @Prop({ type: Number, select: true, default: 0})
+  @Prop({ type: Number, select: true, default: 0 })
   transactionCount: number;
 
   @Prop({ type: [Tier], default: [] })
@@ -144,7 +144,7 @@ export class User {
   @Prop({ type: Number, default: 0 })
   meter: number;
 
-  @Prop({ type: Boolean , default: true })
+  @Prop({ type: Boolean, default: true })
   oneTimeBonus: boolean
 
   @Prop({ type: Date, default: Date.now() })
@@ -153,4 +153,24 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
- 
+
+
+UserSchema.statics.search = function (keyword: string) {
+  const pattern = new RegExp(keyword, 'i'); // case-insensitive
+
+  return this.find({
+    $or: [
+      { username: pattern },
+      { email: pattern },
+      { referral_code: pattern },
+      { referredBy: pattern },
+    ],
+  });
+};
+
+
+export interface UserDocument extends User, Document { }
+
+export interface UserModel extends Model<UserDocument> {
+  search(keyword: string): Promise<UserDocument[]>;
+}
