@@ -137,8 +137,10 @@ export class AdminService {
     };
   }
 
-  async updateUser(email:string, updateData:UpdateProfileDto) {
-    return this.profileService.updateUser(email, updateData)
+  async updateUser(email: string, updateData: UpdateProfileDto) {
+    const existingUser = await this.userModel.findOneAndUpdate({ email }, updateData, { new: true })
+    if (!existingUser) throw new NotFoundException('User not Found, please signup')
+    return { ...existingUser.toObject(), ...updateData, password: undefined, __v: undefined, _id: undefined }
   }
 
   private async useUserBalance(email: string, amount: number, action: 'minus' | 'add') {
