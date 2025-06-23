@@ -31,7 +31,7 @@ export class AdminController {
   @UseGuards(JwtAuthGuard)
   @Get('totalUsers')
   async getTotalUsers() {
-    return this.adminService.getTotalUsers()
+    return await this.adminService.getTotalUsers()
   }
 
   @UseGuards(JwtAuthGuard)
@@ -59,7 +59,7 @@ export class AdminController {
   @UseGuards(JwtAuthGuard)
   @Get('totalCrew')
   async getTotalCrew() {
-    return this.adminService.getTotalCrews()
+    return await this.adminService.getTotalCrews()
   }
 
   @UseGuards(JwtAuthGuard)
