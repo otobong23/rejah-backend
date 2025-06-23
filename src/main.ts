@@ -16,6 +16,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: ['http://localhost:3000', 'https://rejah.net'], // allow requests from your frontend
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,               // allow cookies/auth headers if needed
   });
 
