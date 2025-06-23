@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DepositDto, WithdrawDto } from './dto/transaction.dto';
@@ -32,43 +32,51 @@ export class TransactionService {
   async deposit(depositDto: DepositDto, email: string) {
     const existingUser = await this.userModel.findOne({ email });
 
-    if (!existingUser) {
-      throw new NotFoundException('User not found. Please sign up.');
+    if (!existingUser) throw new NotFoundException('User not found. Please sign up.');
+
+    if (existingUser.ActivateBot) {
+
+      const { amount } = depositDto;
+      const newTransaction = new this.transactionModel({ email, type: 'deposit', amount, image: depositDto.image, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
+
+      await newTransaction.save();
+      const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'deposit')
+      // await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
+      if (!mailSent) {
+        throw new InternalServerErrorException('Failed to send Review email')
+      }
+      return { message: 'Deposit request submitted successfully', newTransaction }
+    } else {
+      throw new NotFoundException('User not Found, please signup')
     }
 
-    const { amount } = depositDto;
-    const newTransaction = new this.transactionModel({ email, type: 'deposit', amount, image: depositDto.image, status: 'pending', date: new Date() }) as UserTransactionDocument & { _id: any };
-
-    await newTransaction.save();
-    const mailSent = await sendMail(to, existingUser.email, Number(amount), newTransaction._id.toString(), 'deposit')
-    // await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", amount)
-    if (!mailSent) {
-      throw new InternalServerErrorException('Failed to send Review email')
-    }
-    return { message: 'Deposit request submitted successfully', newTransaction }
   }
 
   async withdraw(withdrawDto: WithdrawDto, email: string) {
     const { walletAddress, amount } = withdrawDto;
     const existingUser = await this.userModel.findOne({ email })
     if (existingUser) {
-      existingUser.withdrawalWallet = { walletAddress, amount: Number(amount) }
-      existingUser.withdrawStatus = 'pending';
-      if (existingUser.balance < amount) {
-        throw new InternalServerErrorException('Insufficient balance for withdrawal')
-      }
+      if (existingUser.ActivateBot) {
+        existingUser.withdrawalWallet = { walletAddress, amount: Number(amount) }
+        existingUser.withdrawStatus = 'pending';
+        if (existingUser.balance < amount) {
+          throw new InternalServerErrorException('Insufficient balance for withdrawal')
+        }
 
-      const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, date: new Date() }) as UserTransactionDocument & { _id: any };
-      await newTransaction.save();
-      const percent = Number(amount) * 0.9
-      const mailSent = await sendMail(to, existingUser.email, percent, newTransaction._id.toString(), 'withdrawal')
-      if (!mailSent) {
-        throw new InternalServerErrorException('Failed to send withdrawal Confirmation email')
-      }
+        const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, date: new Date() }) as UserTransactionDocument & { _id: any };
+        await newTransaction.save();
+        const percent = Number(amount) * 0.9
+        const mailSent = await sendMail(to, existingUser.email, percent, newTransaction._id.toString(), 'withdrawal')
+        if (!mailSent) {
+          throw new InternalServerErrorException('Failed to send withdrawal Confirmation email')
+        }
 
-      await existingUser.save();
-      // await this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", amount)
-      return { message: 'Withdrawal request submitted successfully', newTransaction }
+        await existingUser.save();
+        // await this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", amount)
+        return { message: 'Withdrawal request submitted successfully', newTransaction }
+      } else {
+        throw new ConflictException('Your account has been suspended. Please Vist Customer Care')
+      }
     } else {
       throw new NotFoundException('User not Found, please signup')
     }
@@ -93,29 +101,37 @@ export class TransactionService {
       },
     };
   }
-  
+
   async mine(email: string, amount: number) {
     const existingUser = await this.findUserByEmail(email);
     if (!existingUser) throw new NotFoundException('User not Found, please signup');
-    existingUser.balance += amount;
-    existingUser.totalYield += amount;
-    await this.crewService.awardReferralBonus(existingUser.userID, amount, "mining_profit")
-    const newTransaction = new this.transactionModel({ email, type: 'yield', amount, status: 'completed', date: new Date() })
-    await newTransaction.save()
-    await existingUser.save();
-    return existingUser.balance;
+    if (existingUser.ActivateBot) {
+      existingUser.balance += amount;
+      existingUser.totalYield += amount;
+      await this.crewService.awardReferralBonus(existingUser.userID, amount, "mining_profit")
+      const newTransaction = new this.transactionModel({ email, type: 'yield', amount, status: 'completed', date: new Date() })
+      await newTransaction.save()
+      await existingUser.save();
+      return existingUser.balance;
+    } else {
+      throw new ConflictException('Your account has been suspended. Please Vist Customer Care')
+    }
   }
 
   async getPlan(email: string, amount: number, plan: string) {
     const existingUser = await this.findUserByEmail(email);
     if (!existingUser) throw new NotFoundException('User not Found, please signup');
-    if (existingUser.balance < amount) {
-      throw new InternalServerErrorException('Insufficient balance for withdrawal');
+    if (existingUser.ActivateBot) {
+      if (existingUser.balance < amount) {
+        throw new InternalServerErrorException('Insufficient balance for withdrawal');
+      }
+      existingUser.balance -= amount;
+      const newTransaction = new this.transactionModel({ email, type: 'tier', amount, plan, status: 'completed', date: new Date() })
+      await newTransaction.save()
+      await existingUser.save();
+      return existingUser.balance;
+    } else {
+      throw new ConflictException('Your account has been suspended. Please Vist Customer Care')
     }
-    existingUser.balance -= amount;
-    const newTransaction = new this.transactionModel({ email, type: 'tier', amount, plan, status: 'completed', date: new Date() })
-    await newTransaction.save()
-    await existingUser.save();
-    return existingUser.balance;
   }
 }

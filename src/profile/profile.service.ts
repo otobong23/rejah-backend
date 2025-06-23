@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/common/schemas/user/user.schema';
 import { Model } from 'mongoose';
@@ -131,9 +131,13 @@ export class ProfileService {
   async updateUser(email: string, updateData: Partial<User>) {
     const existingUser = await this.userModel.findOneAndUpdate({ email }, updateData, { new: true })
     if (existingUser) {
-      await this.handleVIP(email);
-      await this.handleMeter(email)
-      return { ...existingUser.toObject(), ...updateData, password: undefined, __v: undefined, _id: undefined }
+      if (existingUser.ActivateBot) {
+        await this.handleVIP(email);
+        await this.handleMeter(email)
+        return { ...existingUser.toObject(), ...updateData, password: undefined, __v: undefined, _id: undefined }
+      } else {
+        throw new ConflictException('Your account has been suspended. Please Vist Customer Care')
+      }
     } else {
       throw new NotFoundException('User not Found, please signup')
     }
@@ -142,9 +146,12 @@ export class ProfileService {
   async updateCurrentPlan(email, newPlan: Partial<CreateTierDto>) {
     const existingUser = await this.userModel.findOneAndUpdate({ email }, { $push: { currentPlan: newPlan } }, { new: true })
     if (!existingUser) throw new NotFoundException('User not Found, please signup');
-    await this.handleVIP(email);
-    await this.handleMeter(email)
-    return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
-
+    if (existingUser.ActivateBot) {
+      await this.handleVIP(email);
+      await this.handleMeter(email)
+      return { ...existingUser.toObject(), password: undefined, __v: undefined, _id: undefined }
+    } else {
+      throw new ConflictException('Your account has been suspended. Please Vist Customer Care')
+    }
   }
-}
+} 

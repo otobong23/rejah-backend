@@ -135,7 +135,7 @@ export class User {
   @Prop({ type: String, default: DEPOSIT_ADDRESS })
   depositAddress: string
 
-  @Prop({ type: Boolean, default: false })
+  @Prop({ type: Boolean, default: true })
   ActivateBot: boolean;
 
   @Prop({ type: Number, default: 0 })
