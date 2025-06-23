@@ -30,8 +30,11 @@ export class AdminController {
   // ─────────────── USERS ───────────────
   @UseGuards(JwtAuthGuard)
   @Get('users')
-  async getAllUsers() {
-    return await this.adminService.getAllUsers();
+  async getAllUsers(
+    @Query('limit', ParseIntPipe) limit = 50,
+    @Query('page', ParseIntPipe) page = 1
+  ) {
+    return await this.adminService.getAllUsers(limit, page);
   }
 
   @UseGuards(JwtAuthGuard)

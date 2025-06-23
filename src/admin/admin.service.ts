@@ -86,10 +86,20 @@ export class AdminService {
     return this.crewService.getCrew(userID)
   }
 
-  async getAllUsers() {
-    const users = await this.userModel.find()
-    if (!users) throw new NotFoundException('No User Found')
-    return users
+  async getAllUsers(limit = 50, page = 1) {
+    const offset = (page - 1) * limit;
+    const [users, total] = await Promise.all([
+      this.userModel.find().skip(offset).limit(limit).exec(),
+      this.userModel.countDocuments()
+    ]);
+    if (!total) throw new NotFoundException('No User Found')
+    return {
+      users,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async getUser(email: string) {
@@ -204,7 +214,7 @@ export class AdminService {
         }
         await this.useUserBalance(email, updateData.amount, updateData.action);
         if (transaction.type === 'deposit') {
-          if(existingUser.oneTimeBonus){
+          if (existingUser.oneTimeBonus) {
             await this.crewService.awardReferralBonus(existingUser.userID, updateData.amount, "first_deposit");
             existingUser.oneTimeBonus = false
           }
