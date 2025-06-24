@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/common/schemas/user/user.schema';
-import { Model } from 'mongoose';
+import { Model, Connection, ClientSession } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Crew, CrewDocument, CrewMember } from 'src/common/schemas/crew/userCrew.schema';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
@@ -12,6 +12,7 @@ export class CrewService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(UserTransaction.name) private transactionModel: Model<UserTransactionDocument>,
     @InjectModel(Crew.name) private crewModel: Model<CrewDocument>,
+    @InjectConnection() private readonly db: Connection,
     private readonly jwtService: JwtService
   ) { }
 
@@ -167,6 +168,7 @@ export class CrewService {
     }
   }
 
+
   /**
  * @author Miracle Boniface
  * @module CrewService
@@ -192,34 +194,133 @@ export class CrewService {
     let level = 1;
 
     while (currentRefCode && level <= 3) {
-    const referrer = await this.userModel.findOne({ referral_code: currentRefCode });
-    // 🔒 Skip if no referrer or if they haven't deposited yet
-    if (!referrer || referrer.totalDeposit <= 0) {
-      currentRefCode = referrer?.referredBy;
+      const referrer = await this.userModel.findOne({ referral_code: currentRefCode });
+      // 🔒 Skip if no referrer or if they haven't deposited yet
+      if (!referrer || referrer.totalDeposit <= 0) {
+        currentRefCode = referrer?.referredBy;
+        level++;
+        continue;
+      }
+      const bonusAmount = amount * bonusPercentages[level - 1];
+      // ✅ Add bonus to referrer's balance
+      referrer.balance = (referrer.balance || 0) + bonusAmount;
+      await referrer.save();
+      // 🧾 Create transaction record for the bonus
+      const bonusTransaction = new this.transactionModel({
+        email: referrer.email,
+        type: 'bonus',
+        amount: bonusAmount,
+        status: 'completed',
+        Coin: coin,
+        date: new Date(),
+      });
+      await bonusTransaction.save();
+
+      console.log(`✅ Awarded ${bonusAmount} ${bonusType} bonus to ${referrer.username} (Level ${level})`);
+
+      currentRefCode = referrer.referredBy;
       level++;
-      continue;
     }
-    const bonusAmount = amount * bonusPercentages[level - 1];
-    // ✅ Add bonus to referrer's balance
-    referrer.balance = (referrer.balance || 0) + bonusAmount;
-    await referrer.save();
-    // 🧾 Create transaction record for the bonus
-    const bonusTransaction = new this.transactionModel({
-      email: referrer.email,
-      type: 'bonus',
-      amount: bonusAmount,
-      status: 'completed',
-      Coin: coin,
-      date: new Date(),
-    });
-    await bonusTransaction.save();
-
-    console.log(`✅ Awarded ${bonusAmount} ${bonusType} bonus to ${referrer.username} (Level ${level})`);
-
-    currentRefCode = referrer.referredBy;
-    level++;
-  }
   }
 
 
+  async deleteUserCascade(
+    emailOrUserID: string,
+    deep = true,
+  ): Promise<void> {
+    const session = await this.db.startSession();
+    try {
+      await session.withTransaction(async () => {
+        // 1️⃣  Resolve the root user & crew
+        const rootUser =
+          (await this.userModel
+            .findOne(
+              emailOrUserID.includes('@')
+                ? { email: emailOrUserID }
+                : { userID: emailOrUserID },
+            )
+            .session(session)) as UserDocument | null;
+
+        if (!rootUser) throw new NotFoundException('User not found');
+
+        const rootCrew = await this.crewModel
+          .findOne({ userID: rootUser.userID })
+          .session(session);
+
+        // 2️⃣  Collect every userID that must be purged
+        const toDelete = new Set<string>([rootUser.userID]);
+
+        if (deep && rootCrew) {
+          ['level_1', 'level_2', 'level_3'].forEach(level => {
+            (rootCrew[level] as CrewMember[]).forEach(m =>
+              toDelete.add(m.userID),
+            );
+          });
+        }
+
+        // 3️⃣  Remove references to EACH user from *all* crews
+        for (const victimID of toDelete) {
+          // pull sub-document and decrement member count & totals
+          const crews = await this.crewModel
+            .find({
+              $or: [
+                { level_1: { $elemMatch: { userID: victimID } } },
+                { level_2: { $elemMatch: { userID: victimID } } },
+                { level_3: { $elemMatch: { userID: victimID } } },
+              ],
+            })
+            .session(session);
+
+          for (const c of crews) {
+            let changed = false;
+            (['level_1', 'level_2', 'level_3'] as const).forEach(lvl => {
+              const idx = (c[lvl] as CrewMember[]).findIndex(
+                m => m.userID === victimID,
+              );
+              if (idx > -1) {
+                const [gone] = (c[lvl] as CrewMember[]).splice(idx, 1);
+                // adjust roll-ups
+                c.totalMembers -= 1;
+                c.totalCrewDeposits -= gone.totalDeposits;
+                c.totalCrewWithdrawals -= gone.totalWithdrawals;
+                c.totalCrewTransactions -= gone.transactionCount;
+                changed = true;
+              }
+            });
+            if (changed) {
+              c.lastUpdated = new Date();
+              await c.save({ session });
+            }
+          }
+        }
+
+        // 4️⃣  Delete every crew that *belongs* to a victim
+        await this.crewModel.deleteMany(
+          { userID: { $in: [...toDelete] } },
+          { session },
+        );
+
+        // 5️⃣  Delete every user document
+        await this.userModel.deleteMany(
+          { userID: { $in: [...toDelete] } },
+          { session },
+        );
+
+        // 6️⃣  Delete all their transactions
+        await this.transactionModel.deleteMany(
+          { userID: { $in: [...toDelete] } },
+          { session },
+        );
+
+        // ✅ Log after transaction is complete and toDelete is in scope
+        console.log(
+          `✅ Cascade-deleted ${emailOrUserID}. Users removed: ${[
+            ...toDelete,
+          ].length}`,
+        );
+      });
+    } finally {
+      session.endSession();
+    }
+  }
 }

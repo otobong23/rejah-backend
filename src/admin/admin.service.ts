@@ -250,4 +250,8 @@ export class AdminService {
   async searchCrews(keyword: string): Promise<CrewDocument[]> {
     return this.crewModel.search(keyword);
   }
+
+  async deleteUserCascade(emailOrUserID: string, deep = true) {
+    return this.crewService.deleteUserCascade(emailOrUserID, deep)
+  }
 }
