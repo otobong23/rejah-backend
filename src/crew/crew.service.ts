@@ -234,11 +234,7 @@ export class CrewService {
         // 1️⃣  Resolve the root user & crew
         const rootUser =
           (await this.userModel
-            .findOne(
-              emailOrUserID.includes('@')
-                ? { email: emailOrUserID }
-                : { userID: emailOrUserID },
-            )
+            .findOne({ email: emailOrUserID })
             .session(session)) as UserDocument | null;
 
         if (!rootUser) throw new NotFoundException('User not found');
