@@ -253,7 +253,7 @@ export class AdminService {
     return this.crewModel.search(keyword);
   }
 
-  async deleteUserCascade(email: string) {
-    return this.crewExtraService.deleteUser(email)
+  async deleteUserCascade(userID: string) {
+    return this.crewExtraService.deleteUser(userID)
   }
 }
