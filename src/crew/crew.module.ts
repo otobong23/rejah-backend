@@ -5,12 +5,13 @@ import { UserCrewModule } from 'src/common/schemas/crew/userCrew.module';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { UserModule } from 'src/common/schemas/user/user.module';
 import { UserTransactionModule } from 'src/common/schemas/transaction/userTransaction.module';
+import { CrewExtraService } from './crewExtra.service';
 
 @Module({
   imports: [ UserCrewModule, UserModule, UserTransactionModule ],
   controllers: [CrewController],
-  providers: [CrewService, JwtStrategy],
-  exports: [CrewService]
+  providers: [CrewService, JwtStrategy, CrewExtraService],
+  exports: [CrewService, CrewExtraService]
 })
 export class CrewModule {}
  

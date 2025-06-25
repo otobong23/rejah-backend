@@ -12,6 +12,7 @@ import { ProfileService } from 'src/profile/profile.service';
 import { Admin, AdminDocument } from 'src/common/schemas/admin/userAdmin.schema';
 import { sendTransactionStatus } from 'src/common/helpers/mailer';
 import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
+import { CrewExtraService } from 'src/crew/crewExtra.service';
 
 
 @Injectable()
@@ -23,6 +24,7 @@ export class AdminService {
     @InjectModel(Crew.name) private crewModel: CrewModel,
     private jwtService: JwtService,
     private crewService: CrewService,
+    private crewExtraService: CrewExtraService,
     private transactionService: TransactionService,
     private profileService: ProfileService
   ) { }
@@ -251,7 +253,7 @@ export class AdminService {
     return this.crewModel.search(keyword);
   }
 
-  async deleteUserCascade(emailOrUserID: string, deep = true) {
-    return this.crewService.deleteUserCascade(emailOrUserID, deep)
+  async deleteUserCascade(email: string) {
+    return this.crewExtraService.deleteUser(email)
   }
 }

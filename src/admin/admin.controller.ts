@@ -119,7 +119,7 @@ export class AdminController {
   // ─────────────── ACTIONS ───────────────
   @UseGuards(JwtAuthGuard)
   @Patch('detachUser')
-  async detachUser(@Body() {emailOrUserID, deep = true}:{ emailOrUserID: string, deep: boolean }) {
-    return await this.adminService.deleteUserCascade(emailOrUserID, deep)
+  async detachUser(@Body() {email}:{ email: string }) {
+    return await this.adminService.deleteUserCascade(email)
   }
 }
