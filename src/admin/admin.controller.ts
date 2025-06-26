@@ -122,4 +122,9 @@ export class AdminController {
   async detachUser(@Body() {userID}:{ userID: string }) {
     return await this.adminService.deleteUserCascade(userID)
   }
+
+  @Get('globalData')
+  async globalData(){
+    return await this.adminService.globalData()
+  }
 }

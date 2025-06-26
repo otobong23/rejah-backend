@@ -256,4 +256,10 @@ export class AdminService {
   async deleteUserCascade(userID: string) {
     return this.crewExtraService.deleteUser(userID)
   }
+
+  async globalData() {
+    const existingAdmin = await this.adminModel.findOne()
+    if (!existingAdmin) throw new NotFoundException('Admin not Found, please signup')
+    return { walletAddress: existingAdmin.walletAddress, whatsappLink: existingAdmin.whatsappLink, telegramLink: existingAdmin.telegramLink }
+  }
 }
