@@ -6,9 +6,12 @@ export type UserTransactionDocument = UserTransaction & Document;
 
 @Schema({ timestamps: true })
 export class UserTransaction {
-  @Prop({ type: String, default: () => uuidv4(), unique: true, immutable: true })
+  // @Prop({ type: String, default: () => uuidv4(), unique: true, immutable: true })
+  // transactionID: string;
+
+  @Prop({ type: String, required: true, unique: true })
   transactionID: string;
-  
+
   @Prop({ type: String, ref: 'user', required: true })
   email: string;
 

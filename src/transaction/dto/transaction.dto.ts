@@ -7,6 +7,9 @@ export class DepositDto {
 
    @IsNotEmpty()@IsString()
    image: string; // includes data:image/png;base64,...
+
+   @IsNotEmpty()@IsString()
+   transactionID: string
 }
 
 export class WithdrawDto {
