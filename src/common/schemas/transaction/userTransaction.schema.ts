@@ -9,7 +9,7 @@ export class UserTransaction {
   // @Prop({ type: String, default: () => uuidv4(), unique: true, immutable: true })
   // transactionID: string;
 
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({ type: String, default: () => uuidv4(), unique: true })
   transactionID: string;
 
   @Prop({ type: String, ref: 'user', required: true })

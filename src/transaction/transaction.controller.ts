@@ -11,15 +11,12 @@ export class TransactionController {
   @Post('deposit')
   async deposit(@Body() depositDto:DepositDto, @Req() req) {
     const email = req.user.email;
-    const { amount, image } = depositDto;
+    const { image } = depositDto;
 
     if (image.length > 10 * 1024 * 1024) {
       throw new BadRequestException('File too large');
     }
-    return await this.transactionService.deposit({
-      amount,
-      image,
-    }, email);
+    return await this.transactionService.deposit(depositDto, email);
   }
 
   @Post('withdraw')
