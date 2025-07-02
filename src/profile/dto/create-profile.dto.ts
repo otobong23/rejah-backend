@@ -135,6 +135,10 @@ export class UserProfileDTO {
   withdrawStatus?: 'pending' | 'completed' | 'failed';
 
   @IsOptional()
+  @IsString()
+  twentyFourHourTimerStart: string
+
+  @IsOptional()
   @IsBoolean()
   ActivateBot?: boolean;
 
