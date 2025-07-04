@@ -82,7 +82,11 @@ export class TransactionService {
     }
   }
 
-  async getTransactionHistory(email: string, limit: number = 50, offset: number = 0) {
+  async getTransactionHistory(email: string, limit: number = 50, page: number = 1) {
+    limit = Math.max(1, Math.min(limit, 100))
+    page = Math.max(1, page)
+    const offset = (page - 1) * limit;
+    
     const user = await this.findUserByEmail(email);
 
     const transactions = await this.transactionModel
@@ -92,9 +96,14 @@ export class TransactionService {
       .skip(offset)
       .exec();
 
+    const total = await this.transactionModel.countDocuments({ email })
+    const totalPages = total === 0 ? 1 : Math.ceil(total / limit);
+
     return {
       transactions,
-      total: await this.transactionModel.countDocuments({ email }),
+      page,
+      total,
+      totalPages,
       user: {
         email: user.email,
         balance: user.balance,

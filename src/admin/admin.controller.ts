@@ -107,6 +107,16 @@ export class AdminController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('transactions/users')
+  async getUsersTransactions(
+    @Query('email') email: string,
+    @Query('limit', ParseIntPipe) limit = 50,
+    @Query('page', ParseIntPipe) page = 1
+  ) {
+    return await this.adminService.getUserTransactions(email, limit, page);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('transactions/update')
   async updateTransaction(
     @Query('email') email: string,

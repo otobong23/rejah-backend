@@ -67,6 +67,8 @@ export class AdminService {
   }
 
   async getAllCrews(limit = 50, page = 1) {
+    limit = Math.max(1, Math.min(limit, 100))
+    page = Math.max(1, page)
     const offset = (page - 1) * limit;
 
     const [crews, total] = await Promise.all([
@@ -75,13 +77,13 @@ export class AdminService {
     ]);
 
     if (!total) throw new NotFoundException('No Crew Found');
-
+    const totalPages = total === 0 ? 1 : Math.ceil(total / limit);
     return {
       crews,
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
     };
   }
 
@@ -97,18 +99,21 @@ export class AdminService {
   }
 
   async getAllUsers(limit = 50, page = 1) {
+    limit = Math.max(1, Math.min(limit, 100))
+    page = Math.max(1, page)
     const offset = (page - 1) * limit;
     const [users, total] = await Promise.all([
       this.userModel.find().skip(offset).limit(limit).exec(),
       this.userModel.countDocuments()
     ]);
-    if (!total) throw new NotFoundException('No User Found')
+    if (!total) throw new NotFoundException('No User Found');
+    const totalPages = total === 0 ? 1 : Math.ceil(total / limit);
     return {
       users,
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
     };
   }
 
@@ -121,6 +126,8 @@ export class AdminService {
   }
 
   async getTransactions(limit: number = 50, page: number = 1) {
+    limit = Math.max(1, Math.min(limit, 100))
+    page = Math.max(1, page)
     const offset = (page - 1) * limit;
     const [transactions, total] = await Promise.all([
       this.transactionModel.find({ type: { $in: ['withdrawal', 'deposit'] } })
@@ -130,13 +137,18 @@ export class AdminService {
         .exec(),
       this.transactionModel.countDocuments({ type: { $in: ['withdrawal', 'deposit'] } })
     ]);
+    const totalPages = total === 0 ? 1 : Math.ceil(total / limit);
     return {
       transactions,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
       total
     };
+  }
+  
+  async getUserTransactions(email: string, limit: number = 50, page: number = 1) {
+    return this.transactionService.getTransactionHistory(email, limit, page)
   }
 
   async updateUser(email: string, updateData: UpdateProfileDto) {

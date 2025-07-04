@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, BadRequestException, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, BadRequestException, Get, Query, ParseIntPipe } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
 import { TransactionService } from './transaction.service';
 import { DepositDto, getPlanDTO, UseBalanceDTO, WithdrawDto } from './dto/transaction.dto';
@@ -9,7 +9,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Post('deposit')
-  async deposit(@Body() depositDto:DepositDto, @Req() req) {
+  async deposit(@Body() depositDto: DepositDto, @Req() req) {
     const email = req.user.email;
     const { image } = depositDto;
 
@@ -20,15 +20,19 @@ export class TransactionController {
   }
 
   @Post('withdraw')
-  async WithdrawDto(@Body() withdrawDto:WithdrawDto, @Req() req){
+  async WithdrawDto(@Body() withdrawDto: WithdrawDto, @Req() req) {
     const email = req.user.email;
     return this.transactionService.withdraw(withdrawDto, email)
   }
 
   @Get()
-  async getTransactions(@Req() req){
+  async getTransactions(
+    @Req() req,
+    @Query('limit', ParseIntPipe) limit = 50,
+    @Query('page', ParseIntPipe) page = 1
+  ) {
     const email = req.user.email
-    return this.transactionService.getTransactionHistory(email)
+    return this.transactionService.getTransactionHistory(email, limit, page)
   }
 
   @Post('getPlan')
@@ -37,7 +41,7 @@ export class TransactionController {
     return this.transactionService.getPlan(email, getPlanDto.amount, getPlanDto.plan)
   }
   @Post('mine')
-  async mine(@Body('amount') amount:number , @Req() req) {
+  async mine(@Body('amount') amount: number, @Req() req) {
     const email = req.user.email
     return this.transactionService.mine(email, amount)
   }
