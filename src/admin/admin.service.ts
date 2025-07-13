@@ -163,10 +163,10 @@ export class AdminService {
       throw new NotFoundException('User not Found, please signup');
     }
     if (action === 'minus') {
-      if (existingUser.balance < amount) {
-        throw new BadRequestException('Insufficient balance for withdrawal');
-      }
-      existingUser.balance -= amount;
+      // if (existingUser.balance < amount) {
+      //   throw new BadRequestException('Insufficient balance for withdrawal');
+      // }
+      // existingUser.balance -= amount;
       existingUser.totalWithdraw += amount;
     } else if (action === 'add') {
       existingUser.balance += amount;
@@ -205,6 +205,7 @@ export class AdminService {
       transaction.image = updateData.image;
     }
     if (updateData.status === 'failed') {
+      if(transaction.type === 'withdrawal') existingUser.balance += transaction.amount;
       const reason = 'The transaction was not approved.';
       const info = await sendTransactionStatus(
         email,

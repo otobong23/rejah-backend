@@ -62,7 +62,7 @@ export class TransactionService {
         if (existingUser.balance < amount) {
           throw new InternalServerErrorException('Insufficient balance for withdrawal')
         }
-
+        existingUser.balance -= amount;
         const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, date: new Date() }) as UserTransactionDocument & { _id: any };
         await newTransaction.save();
         const percent = Number(amount) * 0.9
