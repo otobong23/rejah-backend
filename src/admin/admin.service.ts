@@ -205,7 +205,10 @@ export class AdminService {
       transaction.image = updateData.image;
     }
     if (updateData.status === 'failed') {
-      if(transaction.type === 'withdrawal') existingUser.balance += transaction.amount;
+      if(transaction.type === 'withdrawal') {
+        existingUser.balance += transaction.amount;
+        await existingUser.save()
+      }
       const reason = 'The transaction was not approved.';
       const info = await sendTransactionStatus(
         email,
