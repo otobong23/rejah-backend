@@ -11,6 +11,8 @@ import { ProfileModule } from './profile/profile.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { CrewModule } from './crew/crew.module';
 import { AdminModule } from './admin/admin.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 configDotenv()
 
 
@@ -29,6 +31,10 @@ configDotenv()
     TransactionModule,
     CrewModule,
     AdminModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/files', // this is the public path e.g. http://localhost:3000/files/...
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
