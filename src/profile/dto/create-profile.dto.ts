@@ -123,6 +123,18 @@ export class UserProfileDTO {
 
   @IsOptional()
   @IsString()
+  bankName?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  accountName?: string;
+
+  @IsOptional()
+  @IsString()
   walletPassword?: string;
 
   @IsOptional()

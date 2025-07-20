@@ -36,6 +36,15 @@ export class UserTransaction {
   @Prop({ type: String })
   withdrawWalletAddress: string;
 
+  @Prop({ type: String })
+  bankName: string;
+
+  @Prop({ type: String })
+  accountName: string;
+
+  @Prop({ type: String })
+  accountNumber: string;
+
   @Prop({ type: Date })
   date: Date;
 }

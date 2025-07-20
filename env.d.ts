@@ -6,6 +6,9 @@ declare namespace NodeJS {
     EMAIL_HOST: string;
     EMAIL_PORT: number;
     EMAIL_USER: string;
-    EMAIL_PASS: string
+    EMAIL_PASS: string;
+    FLUTTERWAVE_PUBLIC_KEY: string;
+    FLUTTERWAVE_SECRET_KEY: string;
+    FLUTTERWAVE_ENCRYPTION_KEY: string;
   }
 }

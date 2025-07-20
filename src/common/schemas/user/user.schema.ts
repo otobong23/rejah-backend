@@ -124,6 +124,15 @@ export class User {
   usdtWallet: string;
 
   @Prop({ type: String })
+  bankName: string;
+
+  @Prop({ type: String })
+  accountName: string;
+
+  @Prop({ type: String })
+  accountNumber: string;
+
+  @Prop({ type: String })
   walletPassword: string
 
   @Prop({ type: withdrawalWallet })

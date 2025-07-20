@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DepositDto, WithdrawDto } from './dto/transaction.dto';
@@ -7,9 +7,10 @@ import { sendMail } from 'src/common/helpers/mailer';
 import { UserTransaction, UserTransactionDocument } from 'src/common/schemas/transaction/userTransaction.schema';
 import { CrewService } from 'src/crew/crew.service';
 import { config } from 'dotenv';
-config()
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+config();
 
-const DEPOSIT_WALLET = 'TFcGAio7carxRnPCeVmZgCqe2AnpvPtqAf';
 const to = process.env.EMAIL_USER
 
 @Injectable()
@@ -17,7 +18,8 @@ export class TransactionService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(UserTransaction.name) private readonly transactionModel: Model<UserTransactionDocument>,
-    private crewService: CrewService
+    private crewService: CrewService,
+    private readonly httpService: HttpService
   ) { }
 
   private async findUserByEmail(email: string): Promise<UserDocument> {
@@ -53,7 +55,7 @@ export class TransactionService {
   }
 
   async withdraw(withdrawDto: WithdrawDto, email: string) {
-    const { walletAddress, amount } = withdrawDto;
+    const { accountName, accountNumber, bankName, walletAddress, amount } = withdrawDto;
     const existingUser = await this.userModel.findOne({ email })
     if (existingUser) {
       if (existingUser.ActivateBot) {
@@ -63,7 +65,7 @@ export class TransactionService {
           throw new InternalServerErrorException('Insufficient balance for withdrawal')
         }
         existingUser.balance -= amount;
-        const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, date: new Date() }) as UserTransactionDocument & { _id: any };
+        const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, accountName, accountNumber, bankName, date: new Date() }) as UserTransactionDocument & { _id: any };
         await newTransaction.save();
         const percent = Number(amount) * 0.9
         const mailSent = await sendMail(to, existingUser.email, percent, newTransaction._id.toString(), 'withdrawal')
@@ -86,7 +88,7 @@ export class TransactionService {
     limit = Math.max(1, Math.min(limit, 100))
     page = Math.max(1, page)
     const offset = (page - 1) * limit;
-    
+
     const user = await this.findUserByEmail(email);
 
     const transactions = await this.transactionModel
@@ -141,6 +143,30 @@ export class TransactionService {
       return existingUser.balance;
     } else {
       throw new ConflictException('Your account has been suspended. Please Vist Customer Care')
+    }
+  }
+
+  async resolveAccount(account_number: string, account_bank: string) {
+    const FLW_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          'https://api.flutterwave.com/v3/accounts/resolve',
+          {
+            account_number,
+            account_bank,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${FLW_SECRET_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(error.response?.data || 'Flutterwave error', error.response?.status || 500);
     }
   }
 }

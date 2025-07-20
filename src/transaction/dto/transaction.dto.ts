@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class DepositDto {
 
@@ -17,8 +17,18 @@ export class WithdrawDto {
    @IsNotEmpty()@IsNumber()
    amount: number;
 
-   @IsNotEmpty()@IsString()
+   @IsOptional()
+   @IsString()
    walletAddress: string;
+
+   @IsNotEmpty()@IsString()
+   accountNumber: string;
+
+   @IsNotEmpty()@IsString()
+   accountName: string;
+
+   @IsNotEmpty()@IsString()
+   bankName: string;
 
 }
 
@@ -38,4 +48,12 @@ export class getPlanDTO {
    @IsNotEmpty()@IsString()
    plan: string
 
+}
+
+export class ResolveDetailsDTO{
+   @IsNotEmpty()@IsString()
+   account_number: string;
+   
+   @IsNotEmpty()@IsString()
+   account_bank: string;
 }
