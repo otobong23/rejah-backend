@@ -15,7 +15,7 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://rejah.net', 'https://novox.app'], // allow requests from your frontend
+    origin: ['http://localhost:3000', 'https://rejah.net', 'https://novox.app', 'https://www.novox.app'], // allow requests from your frontend
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,               // allow cookies/auth headers if needed
   });
