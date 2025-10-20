@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, BadRequestException, Get, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, BadRequestException, Get, Query, ParseIntPipe, Patch } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/strategies/jwt-auth.guard';
 import { TransactionService } from './transaction.service';
 import { DepositDto, getPlanDTO, ResolveDetailsDTO, UseBalanceDTO, WithdrawDto } from './dto/transaction.dto';
@@ -46,7 +46,13 @@ export class TransactionController {
     return this.transactionService.mine(email, amount)
   }
   @Post('resolve_account')
-  async resolveAccount(@Body() resolveDetailsDTO:ResolveDetailsDTO){
+  async resolveAccount(@Body() resolveDetailsDTO: ResolveDetailsDTO) {
     return this.transactionService.resolveAccount(resolveDetailsDTO.account_number, resolveDetailsDTO.account_bank)
+  }
+
+  @Get('spin-wheel')
+  async spinWheel(@Req() req) {
+    const email = req.user.email;
+    return this.transactionService.spinReward(email, 0.01)
   }
 }

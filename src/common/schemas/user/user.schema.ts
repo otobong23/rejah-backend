@@ -147,6 +147,9 @@ export class User {
   @Prop({ type: String, default: undefined })
   twentyFourHourTimerStart: string
 
+  @Prop({ type: Number, default: Date.now() })
+  spinWheelTimerStart: number
+
   @Prop({ type: Boolean, default: true })
   ActivateBot: boolean;
 

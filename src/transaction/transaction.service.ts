@@ -169,4 +169,27 @@ export class TransactionService {
       throw new HttpException(error.response?.data || 'Flutterwave error', error.response?.status || 500);
     }
   }
+
+  async spinReward(email: string, amount: number) {
+    const existingUser = await this.findUserByEmail(email);
+    if (!existingUser) throw new NotFoundException('user not Found, please signup');
+    if (existingUser.ActivateBot) {
+      const startTime = new Date(existingUser.spinWheelTimerStart);
+      const currentTime = new Date();
+      const timeDifference = currentTime.getTime() - startTime.getTime();
+      const hoursInMilliseconds = 24 * 60 * 60 * 1000;
+      if (timeDifference < hoursInMilliseconds) throw new BadRequestException('Time for next spin has not elapsed. Please try again later.');
+      try {
+        existingUser.balance += amount;
+        existingUser.spinWheelTimerStart = Date.now();
+        const newTransaction = new this.transactionModel({ email, type: 'bonus', amount, status: 'completed', date: new Date() })
+        await newTransaction.save()
+        await existingUser.save();
+        return existingUser.balance;
+      } catch (err) {
+        console.error('Error processing spin reward:', err)
+        throw new InternalServerErrorException('An error occurred while processing your spin reward. please try again later. Error: ' + err.message)
+      }
+    }
+  }
 }
