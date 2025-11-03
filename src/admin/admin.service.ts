@@ -29,22 +29,44 @@ export class AdminService {
     private profileService: ProfileService
   ) { }
 
+  // async login(adminLogindto: AdminLoginDto) {
+  //   const EMAIL = process.env.EMAIL_USER
+  //   if (EMAIL === adminLogindto.username) {
+  //     const existingAdmin = await this.adminModel.findOne()
+  //     if (!existingAdmin) {
+  //       const newAdmin = new this.adminModel({ email: EMAIL })
+  //       await newAdmin.save()
+  //     }
+  //     if (existingAdmin?.password !== adminLogindto.password) throw new UnauthorizedException('Invalid credentials');
+  //     return {
+  //       success: true,
+  //       access_token: this.jwtService.sign({ email: adminLogindto.username, password: adminLogindto.password }),
+  //       message: 'login successful'
+  //     };
+  //   }
+  //   throw new UnauthorizedException('Invalid credentials');
+  // }
+
   async login(adminLogindto: AdminLoginDto) {
-    const EMAIL = process.env.EMAIL_USER
-    if (EMAIL === adminLogindto.username) {
-      const existingAdmin = await this.adminModel.findOne()
-      if (!existingAdmin) {
-        const newAdmin = new this.adminModel({ email: EMAIL })
+    const USERNAME = process.env.EMAIL_USER
+    const existingAdmin = await this.adminModel.findOne()
+
+    if (!existingAdmin) {
+      if (USERNAME === adminLogindto.username) {
+        const newAdmin = new this.adminModel({ email: USERNAME })
         await newAdmin.save()
+      } else {
+        throw new UnauthorizedException('Invalid credentials');
       }
-      if (existingAdmin?.password !== adminLogindto.password) throw new UnauthorizedException('Invalid credentials');
-      return {
-        success: true,
-        access_token: this.jwtService.sign({ email: adminLogindto.username, password: adminLogindto.password }),
-        message: 'login successful'
-      };
     }
-    throw new UnauthorizedException('Invalid credentials');
+    if (existingAdmin?.password !== adminLogindto.password.trim() && existingAdmin?.email !== adminLogindto.username.trim()) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return {
+      success: true,
+      access_token: this.jwtService.sign({ email: adminLogindto.username, password: adminLogindto.password }),
+      message: 'login successful'
+    };
   }
 
   async updateAdmin(email: string, updateData: Partial<Admin>) {
@@ -146,7 +168,7 @@ export class AdminService {
       total
     };
   }
-  
+
   async getUserTransactions(email: string, limit: number = 50, page: number = 1) {
     return this.transactionService.getTransactionHistory(email, limit, page)
   }
@@ -205,7 +227,7 @@ export class AdminService {
       transaction.image = updateData.image;
     }
     if (updateData.status === 'failed') {
-      if(transaction.type === 'withdrawal') {
+      if (transaction.type === 'withdrawal') {
         existingUser.balance += transaction.amount;
         await existingUser.save()
       }
