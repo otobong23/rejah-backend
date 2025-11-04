@@ -70,6 +70,9 @@ async signup(signup: Signup) {
   if (existingUser) {
     throw new ConflictException('User already exists');
   }
+  const checkEmail = await this.userModel.findOne({ email });
+  if (checkEmail) throw new ConflictException('User already exists');
+  
   const hashedPassword = await doHash(password, 10);
 
   let referredBy: string | undefined;
