@@ -169,8 +169,8 @@ const TransactionMail: React.FC<EmailTemplateProps> = ({
   coin = "USDT",
   timestamp = new Date().toLocaleString()
 }) => {
-  const review = 'https://www.rejah.net/admin/transactions'
-  const dashboard = 'https://www.rejah.net/admin/dashboard'
+  const review = 'https://www.novox.app/admin/transactions'
+  const dashboard = 'https://www.novox.app/admin/dashboard'
   return (
     <div style={styles.body}>
       <div style={styles.container}>
@@ -250,7 +250,7 @@ const TransactionMail: React.FC<EmailTemplateProps> = ({
         {/* Footer */}
         <div style={styles.footer}>
           <p style={styles.footerText}>
-            <strong>Rejah Trading Platform</strong>
+            <strong>Novox Trading Platform</strong>
           </p>
           <p style={styles.footerText}>
             Modern P2P Bitcoin & Cryptocurrency Exchange
