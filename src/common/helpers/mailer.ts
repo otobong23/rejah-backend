@@ -32,7 +32,7 @@ export default async function sendResetMail(to: string, username: string, code: 
    const mailOptions = {
       from,
       to,
-      subject: 'Reja: Reset Code',
+      subject: 'Novox: Reset Code',
       html: htmlContent,
    };
 
@@ -49,7 +49,7 @@ export async function sendMail(to: string, email: string, amount: number, transa
    const mailOptions = {
       from,
       to,
-      subject: 'REJAH: Incoming Transaction Request',
+      subject: 'NOVOX: Incoming Transaction Request',
       html: htmlContent,
    };
 
@@ -66,7 +66,7 @@ export async function sendTransactionStatus(to: string, email: string, amount: n
    const mailOptions = {
       from,
       to,
-      subject: 'REJAH: Incoming Transaction Request',
+      subject: 'NOVOX: Incoming Transaction Request',
       html: htmlContent,
    };
 
