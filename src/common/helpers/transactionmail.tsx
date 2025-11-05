@@ -176,8 +176,8 @@ const TransactionMail: React.FC<EmailTemplateProps> = ({
       <div style={styles.container}>
         {/* Header */}
         <div style={styles.header}>
-          <div style={styles.logo}>Rejah</div>
-          <div style={styles.tagline}>Peer-to-Peer Trading Platform</div>
+          <div style={styles.logo}>Novox</div>
+          <div style={styles.tagline}>Verified Trading Platform</div>
         </div>
 
         {/* Content */}
