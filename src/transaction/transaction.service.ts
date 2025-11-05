@@ -61,8 +61,28 @@ export class TransactionService {
       if (existingUser.ActivateBot) {
         existingUser.withdrawalWallet = { walletAddress, amount: Number(amount) }
         existingUser.withdrawStatus = 'pending';
+        const now = new Date()
+
+        // Get day name in Africa/Lagos timezone
+        const day = now.toLocaleString("en-US", {
+          timeZone: "Africa/Lagos",
+          weekday: "long"
+        });
+
+        // Restrict weekends
+        if (["Saturday", "Sunday"].includes(day)) {
+          throw new ConflictException("Withdrawals aren't allowed on weekends");
+        }
+
+        const hour = parseInt(now.toLocaleString("en-US", { timeZone: "Africa/Lagos", hour: "numeric", hour12: false }))
+        if (hour < 9 || hour >= 17) {
+          throw new ConflictException('Withdrawals are only Allowed from 09:00AM - 05:00PM UTC+1 Timezone')
+        }
+        if (amount < 6) {
+          throw new ConflictException('Minimum Withdrawal is $6')
+        }
         if (existingUser.balance < amount) {
-          throw new InternalServerErrorException('Insufficient balance for withdrawal')
+          throw new ConflictException('Insufficient balance for withdrawal')
         }
         existingUser.balance -= amount;
         const newTransaction = new this.transactionModel({ email, type: 'withdrawal', amount, status: 'pending', withdrawWalletAddress: walletAddress, accountName, accountNumber, bankName, date: new Date() }) as UserTransactionDocument & { _id: any };
