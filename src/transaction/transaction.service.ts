@@ -71,12 +71,12 @@ export class TransactionService {
 
         // Restrict weekends
         if (["Saturday", "Sunday"].includes(day)) {
-          throw new ConflictException("Withdrawals aren't allowed on weekends");
+          throw new ConflictException("Withdrawals aren't allowed on weekends. Withdrawals reopen at 09:00 AM Monday (Africa/Lagos time).");
         }
 
         const hour = parseInt(now.toLocaleString("en-US", { timeZone: "Africa/Lagos", hour: "numeric", hour12: false }))
         if (hour < 9 || hour >= 17) {
-          throw new ConflictException('Withdrawals are only Allowed from 09:00AM - 05:00PM UTC+1 Timezone')
+          throw new ConflictException('Withdrawals are only Allowed from 09:00AM - 05:00PM UTC+1 Timezone. Please try again during business hours.')
         }
         if (amount < 6) {
           throw new ConflictException('Minimum Withdrawal is $6')
