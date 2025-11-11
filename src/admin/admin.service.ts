@@ -189,10 +189,10 @@ export class AdminService {
       //   throw new BadRequestException('Insufficient balance for withdrawal');
       // }
       // existingUser.balance -= amount;
-      existingUser.totalWithdraw += amount;
+      existingUser.totalWithdraw += 1;
     } else if (action === 'add') {
       existingUser.balance += amount;
-      existingUser.totalDeposit += amount;
+      existingUser.totalDeposit += 1;
     } else {
       throw new BadRequestException('Invalid action type');
     }
@@ -274,7 +274,7 @@ export class AdminService {
           }
           await this.crewService.updateCrewOnTransaction(existingUser.userID, "deposit", updateData.amount)
         } else this.crewService.updateCrewOnTransaction(existingUser.userID, "withdraw", updateData.amount);
-        await this.updateAdminTotals(transaction.type, updateData.amount);
+        await this.updateAdminTotals(transaction.type, 1);
       } else {
         throw new BadRequestException('Invalid transaction type');
       }
