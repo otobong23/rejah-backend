@@ -189,10 +189,10 @@ export class AdminService {
       //   throw new BadRequestException('Insufficient balance for withdrawal');
       // }
       // existingUser.balance -= amount;
-      existingUser.totalWithdraw += 1;
+      existingUser.totalWithdraw += amount;
     } else if (action === 'add') {
       existingUser.balance += amount;
-      existingUser.totalDeposit += 1;
+      existingUser.totalDeposit += amount;
     } else {
       throw new BadRequestException('Invalid action type');
     }
