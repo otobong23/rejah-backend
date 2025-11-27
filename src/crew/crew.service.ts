@@ -184,7 +184,7 @@ export class CrewService {
     const user = await this.userModel.findOne({ userID });
     if (!user || !user.referredBy) return;
 
-    const bonusPercentages = [0.05, 0.03, 0.01]; // 5%, 3%, 1%
+    const bonusPercentages = bonusType === 'mining_profit' ? [0.02, 0.02, 0.01] : [0.05, 0.03, 0.01] // 2%, 2%, 1%  |  5%, 3%, 1%
     const bonusTypeMap = {
       'first_deposit': 'Deposit',
       'mining_profit': 'Mining'
